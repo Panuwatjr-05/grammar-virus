@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grammar Virus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- icon set (24×24, stroke icons; use with <svg class="i"><use href="#i-name"/></svg>) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-virus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 7V4M12 17v3M7 12H4M17 12h3M8.5 8.5 6.4 6.4M15.5 15.5l2.1 2.1M8.5 15.5l-2.1 2.1M15.5 8.5l2.1-2.1"/><g fill="currentColor" stroke="none"><circle cx="12" cy="2.6" r="1.4"/><circle cx="12" cy="21.4" r="1.4"/><circle cx="2.6" cy="12" r="1.4"/><circle cx="21.4" cy="12" r="1.4"/><circle cx="5.4" cy="5.4" r="1.4"/><circle cx="18.6" cy="18.6" r="1.4"/><circle cx="5.4" cy="18.6" r="1.4"/><circle cx="18.6" cy="5.4" r="1.4"/><circle cx="10.4" cy="11" r="1.1"/><circle cx="13.7" cy="13.4" r=".9"/></g></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><rect x="6.5" y="5" width="3.6" height="14" rx="1"/><rect x="13.9" y="5" width="3.6" height="14" rx="1"/></g></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-volume-off" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6.5 3h11M6.5 21h11M7.5 3v2.5c0 2.2 4.5 4.3 4.5 6.5s-4.5 4.3-4.5 6.5V21M16.5 3v2.5c0 2.2-4.5 4.3-4.5 6.5s4.5 4.3 4.5 6.5V21"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.2-9.4C1.7 7.4 3.8 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.2 0 5.3 2.9 4.2 6.1C19.5 15.4 12 20 12 20z" fill="currentColor"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9-4.4-4.1 6-.8z" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></symbol>
+  <symbol id="i-notebook" viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5v17M12.5 8h3M12.5 11.5h3"/></symbol>
+  <symbol id="i-guide" viewBox="0 0 24 24"><path d="M12 6.5C10.5 5 8.3 4.5 4 4.5v13c4.3 0 6.5.5 8 2 1.5-1.5 3.7-2 8-2v-13c-4.3 0-6.5.5-8 2zM12 6.5v13"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16.5v-5M11.5 16.5V6.5M16 16.5v-8"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.3-4.4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5L21.5 20h-19z"/><path d="M12 10v4.5M12 17.3v.2"/></symbol>
+  <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8c0 2.8 1.4 4.6 3 5.5V20h10v-3.5c1.6-.9 3-2.7 3-5.5a8 8 0 0 0-8-8z"/><g fill="currentColor" stroke="none"><circle cx="9" cy="11.5" r="1.8"/><circle cx="15" cy="11.5" r="1.8"/></g><path d="M10.5 20v-2.5M13.5 20v-2.5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5L4.5 13.5H11l-1 8 8.5-11H12z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.2"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M8.5 14.5A6 6 0 1 1 15.5 14.5c-.8.6-1.2 1.4-1.2 2.3V18H9.7v-1.2c0-.9-.4-1.7-1.2-2.3z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 20h14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"/><path d="M4.5 4.5V9H9"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5M6 9.5V20h12V9.5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.8 3.5 5 5.2 5 10a5 5 0 0 1-10 0c0-2.4 1.3-4 2.5-5 .2 1.9 1.2 3 2.3 3 .2-2.8-.8-4.9.2-8z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5.5a4 4 0 0 1-8 0zM8 6H4.5v1A3.5 3.5 0 0 0 8 10.5M16 6h3.5v1A3.5 3.5 0 0 1 16 10.5M12 13.5V17M9 20.5h6M10 17h4v3.5h-4z"/></symbol>
+  <symbol id="i-percent" viewBox="0 0 24 24"><path d="M18.5 5.5l-13 13"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-mouse-l" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 3v7M6 10h12"/><path d="M12 3a6 6 0 0 0-6 6v1h6z" fill="currentColor"/></symbol>
+  <symbol id="i-mouse-r" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 3v7M6 10h12"/><path d="M12 3a6 6 0 0 1 6 6v1h-6z" fill="currentColor"/></symbol>
+</defs></svg>
+
+<canvas id="cv"></canvas>
+
+<div id="hud">
+  <div class="hud-l">
+    <div class="hp" id="hp"><svg class="i"><use href="#i-heart"/></svg><div class="hp-bar"><div id="hpfill"></div></div><b id="hpNum">100</b><span class="pips" id="hPips"></span></div>
+    <div class="lvchip" id="hLevel"><i></i><span></span></div>
+    <div class="hbest" id="hBest"></div>
+  </div>
+  <div class="hud-c">
+    <div class="score"><span class="label" data-i18n="hudScore"></span><b id="hScore">0</b></div>
+    <div class="combo" id="hCombo"></div>
+  </div>
+  <div class="hud-r">
+    <div class="left"><b id="hLeft">0</b><span class="label" id="hLeftLbl"></span></div>
+    <button class="ibtn" id="slowBtn" title="Slow-Mo (SPACE)"><svg class="i"><use href="#i-hourglass"/></svg><span id="slowN">0</span></button>
+    <button class="ibtn" id="btnVoice" title="Voice"><svg class="i"><use href="#i-volume"/></svg></button>
+    <button class="ibtn" id="btnPause" title="Pause (Esc)"><svg class="i"><use href="#i-pause"/></svg></button>
+  </div>
+</div>
+
+<!-- gun legend; on touch screens it is also the gun switch -->
+<div id="gunbar">
+  <button class="gunbtn kill" data-gun="kill"><svg class="i"><use href="#i-mouse-l"/></svg><span><b data-i18n="gunKill"></b><small data-i18n="gunKillSub"></small></span></button>
+  <button class="gunbtn cure" data-gun="cure"><svg class="i"><use href="#i-mouse-r"/></svg><span><b data-i18n="gunCure"></b><small data-i18n="gunCureSub"></small></span></button>
+</div>
+
+<div id="tiles" class="panel boss">
+  <div class="dock-head"><svg class="i"><use href="#i-search"/></svg><div id="tPrompt"></div><span id="tStage"></span></div>
+  <div id="tMeaning"></div>
+  <div id="tWords"></div>
+</div>
+
+<!-- main menu -->
+<div class="overlay show" id="menu">
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><svg class="i"><use href="#i-virus"/></svg><span>Grammar Virus</span></div>
+      <nav class="tabs">
+        <button class="tab" data-tab="play"><svg class="i"><use href="#i-play"/></svg><span class="lbl" data-i18n="tabPlay"></span></button>
+        <button class="tab" data-tab="board"><svg class="i"><use href="#i-trophy"/></svg><span class="lbl" data-i18n="tabBoard"></span></button>
+        <button class="tab" data-tab="guide"><svg class="i"><use href="#i-guide"/></svg><span class="lbl" data-i18n="tabGuide"></span></button>
+        <button class="tab" data-tab="notebook"><svg class="i"><use href="#i-notebook"/></svg><span class="lbl" data-i18n="tabNotebook"></span><span class="badge" id="nbCount"></span></button>
+        <button class="tab" data-tab="stats"><svg class="i"><use href="#i-chart"/></svg><span class="lbl" data-i18n="tabStats"></span></button>
+        <button class="tab" data-tab="settings"><svg class="i"><use href="#i-sliders"/></svg><span class="lbl" data-i18n="tabSettings"></span></button>
+      </nav>
+      <div class="seg"><button data-lang="en">EN</button><button data-lang="th">TH</button></div>
+    </header>
+
+    <section class="pane" id="pane-play">
+      <div class="play">
+        <div class="hero">
+          <div class="kicker" data-i18n="menuKicker"></div>
+          <h1 class="title"><span>Grammar</span><span class="acid">Virus</span></h1>
+          <div class="subtitle" data-i18n="subtitle"></div>
+          <p class="tagline" data-i18n="tagline"></p>
+          <div class="cta">
+            <button class="btn" id="playBtn"><svg class="i"><use href="#i-play"/></svg><span></span></button>
+            <button class="btn ghost" id="reviewBtn"><svg class="i"><use href="#i-notebook"/></svg><span></span></button>
+          </div>
+          <label class="field"><svg class="i"><use href="#i-user"/></svg><input id="playerName" maxlength="40" data-i18n-ph="playerPh"></label>
+        </div>
+        <div class="panel campaign">
+          <div class="campaign-head"><span class="kicker" data-i18n="levels"></span><span class="label" id="starsTotal"></span></div>
+          <div class="levels" id="levels"></div>
+        </div>
+      </div>
+      <!-- survival mode: all parts of speech, endless, leaderboard -->
+      <div class="panel warn svcard" id="svCard"></div>
+      <div class="rules">
+        <div class="label rules-head" data-i18n="howTo"></div>
+        <div class="rule" style="--c:var(--bad)"><span class="ric"><svg class="i"><use href="#i-mouse-l"/></svg></span><div><b data-i18n="r1t"></b><p data-i18n="r1"></p></div></div>
+        <div class="rule" style="--c:var(--ok)"><span class="ric"><svg class="i"><use href="#i-mouse-r"/></svg></span><div><b data-i18n="r2t"></b><p data-i18n="r2"></p></div></div>
+        <div class="rule" style="--c:var(--warn)"><span class="ric"><svg class="i"><use href="#i-alert"/></svg></span><div><b data-i18n="r3t"></b><p data-i18n="r3"></p></div></div>
+        <div class="rule" style="--c:var(--acid)"><span class="ric"><svg class="i"><use href="#i-clock"/></svg></span><div><b data-i18n="r4t"></b><p data-i18n="r4"></p></div></div>
+        <div class="rule" style="--c:var(--boss)"><span class="ric"><svg class="i"><use href="#i-skull"/></svg></span><div><b data-i18n="r5t"></b><p data-i18n="r5"></p></div></div>
+        <div class="rule" style="--c:#8fd0ff"><span class="ric"><svg class="i"><use href="#i-bolt"/></svg></span><div><b data-i18n="r6t"></b><p data-i18n="r6"></p></div></div>
+      </div>
+    </section>
+    <section class="pane" id="pane-board" hidden><div class="panel page" id="boardBody"></div></section>
+    <section class="pane" id="pane-guide" hidden><div class="panel page" id="guideBody"></div></section>
+    <section class="pane" id="pane-notebook" hidden><div class="panel page" id="nbBody"></div></section>
+    <section class="pane" id="pane-stats" hidden><div class="panel page" id="stBody"></div></section>
+    <section class="pane" id="pane-settings" hidden><div class="panel page" id="setBody"></div></section>
+  </div>
+</div>
+
+<div class="overlay modal" id="briefing"><div class="panel xl"><div class="body" id="brBody"></div></div></div>
+<div class="overlay modal" id="speak"><div class="panel narrow"><div class="body" id="spBody"></div></div></div>
+<div class="overlay modal" id="result"><div class="panel wide" id="rPanel"><div class="body" id="rBody"></div></div></div>
+<div class="overlay modal" id="pause">
+  <div class="panel narrow"><div class="body" style="text-align:center">
+    <h2 data-i18n="paused" style="font-size:32px;text-transform:uppercase;letter-spacing:.06em"></h2>
+    <p class="muted" data-i18n="pauseTip" style="margin-top:10px"></p>
+    <div class="row center">
+      <button class="btn" id="btnResume"><svg class="i"><use href="#i-play"/></svg><span data-i18n="resume"></span></button>
+      <button class="btn ghost" id="btnQuit"><svg class="i"><use href="#i-home"/></svg><span data-i18n="quit"></span></button>
+    </div>
+  </div></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/levels-1.js"></script>
+<script src="js/levels-2.js"></script>
+<script src="js/explain.js"></script>
+<script src="js/answers-1.js"></script>
+<script src="js/answers-2.js"></script>
+<script src="js/sentence.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/store.js"></script>
+<script src="js/render.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/selftest.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+/* =========================================================
+   Levels 1–5: Noun, Pronoun, Verb, Adjective, Adverb
+   items: t = correct sentence, w = broken sentence, [ ] = highlighted word(s)
+          pos (optional) = part of speech of the highlighted word (default: level pos)
+          note (optional) = extra label shown in feedback
+   boss:  stages = which words to find, neutral = words that don't count either way
+   ========================================================= */
+LEVELS.push(
+{ pos:'noun', chips:['noun'], topic:'Nouns', th:'คำนาม (Noun)',
+  count:8, speed:1.15, spawn:3.4, maxAlive:2,
+  items:[
+    {t:'I have two [cats].', w:'I have two [cat].'},
+    {t:'Three [children] are playing.', w:'Three [childs] are playing.'},
+    {t:'She bought five [boxes].', w:'She bought five [boxs].'},
+    {t:'The [mice] ate the cheese.', w:'The [mouses] ate the cheese.'},
+    {t:'I need some [information].', w:'I need some [informations].'},
+    {t:'My [teeth] are white.', w:'My [tooths] are white.'},
+    {t:'I live in [Bangkok].', w:'I live in [bangkok].', note:'proper noun'},
+    {t:'This is [Tom\'s] bike.', w:'This is [Tom] bike.', note:'possessive'},
+    {t:'He has [a dog].', w:'He has [dog].'},
+    {t:'Two [women] are waiting.', w:'Two [womans] are waiting.'},
+    {t:'The [leaves] are falling.', w:'The [leafs] are falling.'},
+    {t:'Money cannot buy [happiness].', w:'Money cannot buy [happy].'},
+  ],
+  boss:[
+    {t:'The zombie ate a sandwich in the kitchen with Tom.', th:'ซอมบี้กินแซนด์วิชในครัวกับทอม',
+     stages:[{pos:'noun', keys:['zombie','sandwich','kitchen','Tom']}], neutral:[]},
+    {t:'My sister found a cat and two dogs in the garden.', th:'พี่สาวของฉันเจอแมวหนึ่งตัวกับสุนัขสองตัวในสวน',
+     stages:[{pos:'noun', keys:['sister','cat','dogs','garden']}], neutral:[]},
+  ] },
+
+{ pos:'pronoun', chips:['pronoun'], topic:'Pronouns', th:'คำสรรพนาม (Pronoun)',
+  count:10, speed:1.2, spawn:3.2, maxAlive:3,
+  items:[
+    {t:'[She] is my teacher.', w:'[Her] is my teacher.'},
+    {t:'Tom likes [her].', w:'Tom likes [she].'},
+    {t:'Can you help [me]?', w:'Can you help [I]?'},
+    {t:'This book is [mine].', w:'This book is [my].', note:'possessive'},
+    {t:'[We] are students.', w:'[Us] are students.'},
+    {t:'He hurt [himself].', w:'He hurt [hisself].', note:'reflexive'},
+    {t:'Give it to [them].', w:'Give it to [they].'},
+    {t:'[They] live near [us].', w:'[Them] live near [we].'},
+    {t:'Is this bag [yours]?', w:'Is this bag [your]?', note:'possessive'},
+    {t:'The cat licked [its] paw.', w:'The cat licked [it\'s] paw.', note:'possessive'},
+    {t:'Anna and [I] went home.', w:'Anna and [me] went home.'},
+    {t:'We enjoyed [ourselves].', w:'We enjoyed [ourself].', note:'reflexive'},
+  ],
+  boss:[
+    {t:'She told him that they would meet us after school.', th:'เธอบอกเขาว่าพวกเขาจะมาเจอพวกเราหลังเลิกเรียน',
+     stages:[{pos:'pronoun', keys:['she','him','they','us']}], neutral:[]},
+    {t:'I made this cake myself, so you can share it with them.', th:'ฉันทำเค้กนี้เอง คุณจึงแบ่งมันให้พวกเขาได้',
+     stages:[{pos:'pronoun', keys:['I','myself','you','it','them']}], neutral:['this']},
+  ] },
+
+{ pos:'verb', chips:['verb'], topic:'Verbs', th:'คำกริยา (Verb)',
+  count:11, speed:1.25, spawn:3.0, maxAlive:3,
+  items:[
+    {t:'She [goes] to school.', w:'She [go] to school.'},
+    {t:'He [doesn\'t] like fish.', w:'He [don\'t] like fish.'},
+    {t:'I [agree] with you.', w:'I [am agree] with you.'},
+    {t:'She can [swim] very well.', w:'She can [swims] very well.'},
+    {t:'Yesterday I [ate] rice.', w:'Yesterday I [eat] rice.'},
+    {t:'They [are] my friends.', w:'They [is] my friends.'},
+    {t:'We [went] to the zoo last week.', w:'We [goed] to the zoo last week.'},
+    {t:'My dog [has] a ball.', w:'My dog [have] a ball.'},
+    {t:'He will [come] tomorrow.', w:'He will [comes] tomorrow.'},
+    {t:'I [like] ice cream.', w:'I [am like] ice cream.'},
+    {t:'The zombie [is sleeping] now.', w:'The zombie [sleeping] now.'},
+    {t:'Did you [see] the zombie?', w:'Did you [saw] the zombie?'},
+  ],
+  boss:[
+    {t:'The zombie jumped, ran and screamed at the moon.', th:'ซอมบี้กระโดด วิ่ง และกรีดร้องใส่ดวงจันทร์',
+     stages:[{pos:'verb', keys:['jumped','ran','screamed']}], neutral:[]},
+    {t:'We cook, eat and sleep in this old house.', th:'พวกเราทำอาหาร กิน และนอนในบ้านเก่าหลังนี้',
+     stages:[{pos:'verb', keys:['cook','eat','sleep']}], neutral:[]},
+  ] },
+
+{ pos:'adjective', chips:['adjective'], topic:'Adjectives', th:'คำคุณศัพท์ (Adjective)',
+  count:12, speed:1.3, spawn:2.9, maxAlive:3,
+  items:[
+    {t:'She has a [red car].', w:'She has a [car red].', note:'word order'},
+    {t:'She is very [beautiful].', w:'She is very [beauty].'},
+    {t:'This test is [easier] than the last one.', w:'This test is [more easier] than the last one.', note:'comparative'},
+    {t:'He is the [tallest] boy in class.', w:'He is the [most tallest] boy in class.', note:'superlative'},
+    {t:'The zombie is very [dangerous].', w:'The zombie is very [danger].'},
+    {t:'It was a [delicious] meal.', w:'It was a [deliciously] meal.'},
+    {t:'Your English is [better] now.', w:'Your English is [gooder] now.', note:'comparative'},
+    {t:'She has [long black] hair.', w:'She has [black long] hair.', note:'size before colour'},
+    {t:'I ate [an] apple.', w:'I ate [a] apple.', note:'article'},
+    {t:'He is a [careful] driver.', w:'He is a [carefully] driver.'},
+    {t:'The movie was [boring].', w:'The movie was [bored].', note:'-ing = the cause'},
+    {t:'I feel [tired] today.', w:'I feel [tiring] today.', note:'-ed = the feeling'},
+  ],
+  boss:[
+    {t:'The tall, hungry zombie wore a dirty red shirt.', th:'ซอมบี้ตัวสูงที่หิวโหยใส่เสื้อเชิ้ตสีแดงสกปรก',
+     stages:[{pos:'adjective', keys:['tall','hungry','dirty','red']}], neutral:['the','a']},
+    {t:'My little brother has a cute, fluffy white rabbit.', th:'น้องชายตัวเล็กของฉันมีกระต่ายสีขาวขนฟูน่ารัก',
+     stages:[{pos:'adjective', keys:['little','cute','fluffy','white']}], neutral:['my','a']},
+  ] },
+
+{ pos:'adverb', chips:['adverb'], topic:'Adverbs', th:'คำกริยาวิเศษณ์ (Adverb)',
+  count:12, speed:1.3, spawn:2.8, maxAlive:4,
+  items:[
+    {t:'She sings [beautifully].', w:'She sings [beautiful].'},
+    {t:'He drives [carefully].', w:'He drives [careful].'},
+    {t:'She speaks English very [well].', w:'She speaks English very [good].'},
+    {t:'I [always] walk to school.', w:'I walk [always] to school.', note:'position'},
+    {t:'They [usually] eat lunch at noon.', w:'They eat [usually] lunch at noon.', note:'position'},
+    {t:'He answered the question [correctly].', w:'He answered the question [correct].'},
+    {t:'The cheetah runs very [fast].', w:'The cheetah runs very [fastly].'},
+    {t:'He works [hard] every day.', w:'He works [hardly] every day.', note:'hardly = almost not'},
+    {t:'The test was [extremely] difficult.', w:'The test was [extreme] difficult.'},
+    {t:'She [quickly] ran away.', w:'She [quick] ran away.'},
+    {t:'I [often] play games.', w:'I play [often] games.', note:'position'},
+    {t:'They arrived [late] again.', w:'They arrived [lately] again.', note:'lately = recently'},
+  ],
+  boss:[
+    {t:'Yesterday the zombie walked very slowly and quietly.', th:'เมื่อวานซอมบี้เดินช้ามากและเงียบ ๆ',
+     stages:[{pos:'adverb', keys:['yesterday','very','slowly','quietly']}], neutral:[]},
+    {t:'She almost always answers questions politely and quickly.', th:'เธอตอบคำถามอย่างสุภาพและรวดเร็วแทบทุกครั้ง',
+     stages:[{pos:'adverb', keys:['almost','always','politely','quickly']}], neutral:[]},
+  ] },
+);
