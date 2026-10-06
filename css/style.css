@@ -279,17 +279,26 @@ body.ingame #hud{display:grid}
 #slowBtn{color:#8fd0ff}
 
 /* ---------- gun legend: bottom centre, between the two rifles (left rifle = kill, right rifle = rescue) ---------- */
-/* tap a legend to switch rifles on touch screens */
+/* with a mouse it is only a legend; on touch screens the two legends become big triggers in the corners, over the rifles */
 #gunbar{position:fixed;left:0;right:0;bottom:16px;z-index:5;display:none;justify-content:center;gap:10px;padding:0 18px;pointer-events:none}
 body.ingame:not(.boss) #gunbar{display:flex}
-.gunbtn{--c:var(--bad);pointer-events:auto;display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 16px 0 12px;text-align:left;
+.gunbtn{--c:var(--bad);pointer-events:none;display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 16px 0 12px;text-align:left;
   border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:6px;background:rgba(8,13,19,.72);backdrop-filter:blur(6px);
-  color:var(--text);cursor:pointer}
+  color:var(--text)}
 .gunbtn.cure{--c:var(--ok)}
 .gunbtn .i{width:26px;height:26px;color:var(--c)}
 .gunbtn b{display:block;font-family:var(--ui);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
 .gunbtn small{display:block;font-size:12px;color:var(--text-2)}
-body.touch .gunbtn.on{background:color-mix(in srgb,var(--c) 22%,rgba(8,13,19,.85));box-shadow:0 0 0 1px var(--c),0 0 24px color-mix(in srgb,var(--c) 30%,transparent)}
+/* mouse-button icons on computers, target / heart icons on touch screens */
+body:not(.touch) .tc,body.touch .ms{display:none}
+body.touch #gunbar{justify-content:space-between;bottom:14px;padding:0 14px}
+body.touch .gunbtn{pointer-events:auto;cursor:pointer;touch-action:manipulation;height:66px;min-width:148px;gap:12px;padding:0 20px 0 14px;
+  border:2px solid var(--c);border-radius:12px;background:color-mix(in srgb,var(--c) 18%,rgba(8,13,19,.82));
+  box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 0 18px color-mix(in srgb,var(--c) 22%,transparent);transition:transform .08s,background .08s}
+body.touch .gunbtn.cure{flex-direction:row-reverse;text-align:right;padding:0 14px 0 20px}
+body.touch .gunbtn.hit{transform:scale(.94);background:color-mix(in srgb,var(--c) 45%,rgba(8,13,19,.85))}
+body.touch .gunbtn .i{width:30px;height:30px}
+body.touch .gunbtn b{font-size:17px}
 .mission .ctl.kill .i{color:var(--bad)} .mission .ctl.cure .i,.mission .heal .i{color:var(--ok)}
 
 /* ---------- boss dock ---------- */

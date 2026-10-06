@@ -72,10 +72,10 @@
   </div>
 </div>
 
-<!-- gun legend; on touch screens it is also the gun switch -->
+<!-- gun legend for the mouse; on touch screens these are the two triggers (left = kill rifle, right = rescue rifle) -->
 <div id="gunbar">
-  <button class="gunbtn kill" data-gun="kill"><svg class="i"><use href="#i-mouse-l"/></svg><span><b data-i18n="gunKill"></b><small data-i18n="gunKillSub"></small></span></button>
-  <button class="gunbtn cure" data-gun="cure"><svg class="i"><use href="#i-mouse-r"/></svg><span><b data-i18n="gunCure"></b><small data-i18n="gunCureSub"></small></span></button>
+  <button class="gunbtn kill" data-gun="kill"><svg class="i ms"><use href="#i-mouse-l"/></svg><svg class="i tc"><use href="#i-target"/></svg><span><b data-i18n="gunKill"></b><small data-i18n="gunKillSub"></small></span></button>
+  <button class="gunbtn cure" data-gun="cure"><svg class="i ms"><use href="#i-mouse-r"/></svg><svg class="i tc"><use href="#i-heart"/></svg><span><b data-i18n="gunCure"></b><small data-i18n="gunCureSub"></small></span></button>
 </div>
 
 <div id="tiles" class="panel boss">
@@ -122,8 +122,8 @@
       <div class="panel warn svcard" id="svCard"></div>
       <div class="rules">
         <div class="label rules-head" data-i18n="howTo"></div>
-        <div class="rule" style="--c:var(--bad)"><span class="ric"><svg class="i"><use href="#i-mouse-l"/></svg></span><div><b data-i18n="r1t"></b><p data-i18n="r1"></p></div></div>
-        <div class="rule" style="--c:var(--ok)"><span class="ric"><svg class="i"><use href="#i-mouse-r"/></svg></span><div><b data-i18n="r2t"></b><p data-i18n="r2"></p></div></div>
+        <div class="rule" style="--c:var(--bad)"><span class="ric"><svg class="i ms"><use href="#i-mouse-l"/></svg><svg class="i tc"><use href="#i-target"/></svg></span><div><b data-i18n="r1t"></b><p data-i18n="r1"></p></div></div>
+        <div class="rule" style="--c:var(--ok)"><span class="ric"><svg class="i ms"><use href="#i-mouse-r"/></svg><svg class="i tc"><use href="#i-heart"/></svg></span><div><b data-i18n="r2t"></b><p data-i18n="r2"></p></div></div>
         <div class="rule" style="--c:var(--warn)"><span class="ric"><svg class="i"><use href="#i-alert"/></svg></span><div><b data-i18n="r3t"></b><p data-i18n="r3"></p></div></div>
         <div class="rule" style="--c:var(--acid)"><span class="ric"><svg class="i"><use href="#i-clock"/></svg></span><div><b data-i18n="r4t"></b><p data-i18n="r4"></p></div></div>
         <div class="rule" style="--c:var(--boss)"><span class="ric"><svg class="i"><use href="#i-skull"/></svg></span><div><b data-i18n="r5t"></b><p data-i18n="r5"></p></div></div>

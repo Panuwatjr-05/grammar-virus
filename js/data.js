@@ -124,6 +124,17 @@ const STR = {
     bdRank:'Rank', bdPlayer:'Player', bdBest:'Best score', bdScore:'Score', bdWave:'Wave', bdTime:'Survived', bdAcc:'Accuracy',
     bdRunsN:'Runs', bdCombo:'Best combo', bdDate:'Date', bdYou:'You', bdBy:'by {0}', svOfPlayers:'of {0} players',
     bdKTop:'Top score', bdKWave:'Highest wave', bdKLong:'Longest survival', bdKPlayers:'Players', bdKRuns:'Runs played',
+    // touch screens: "button" instead of "click" (TT() picks the …T text when the game is played by touch)
+    r1tT:'Left button: kill', r2tT:'Right button: rescue', goT:'Left button: kill broken · Right button: rescue correct',
+    ctlKillT:'Left button · kill broken', ctlCureT:'Right button · rescue correct',
+    survivorHitT:'That was a survivor! The right button rescues correct sentences.',
+    cureFailT:'Cure failed! This sentence is broken. The left button kills it.',
+    hintReachedT:'These broken sentences reached you. Shoot them earlier with a kill round (left button).',
+    hintWrongCureT:'These sentences were broken, so the cure could not work. Use a kill round (left button).',
+    hintSurvivorT:'These sentences were already correct. Next time use a cure round (right button).',
+    hintLostT:'These correct sentences walked past you. Rescue them with a cure round (right button).',
+    pauseTipT:'Tap a zombie to target it (the closest one is targeted for you) · Left button = kill · Right button = rescue',
+    tapHint:'Target locked. Press KILL or RESCUE',
   },
   th:{
     subtitle:'เกมยิงซอมบี้ฝึกชนิดของคำ', menuKicker:'แจ้งเตือนการระบาด · Parts of Speech',
@@ -221,6 +232,17 @@ const STR = {
     bdRank:'อันดับ', bdPlayer:'ผู้เล่น', bdBest:'คะแนนสูงสุด', bdScore:'คะแนน', bdWave:'ระลอก', bdTime:'เวลาที่รอด', bdAcc:'ความแม่นยำ',
     bdRunsN:'จำนวนรอบ', bdCombo:'คอมโบสูงสุด', bdDate:'วันที่', bdYou:'คุณ', bdBy:'โดย {0}', svOfPlayers:'จาก {0} คน',
     bdKTop:'คะแนนสูงสุด', bdKWave:'ระลอกสูงสุด', bdKLong:'รอดนานที่สุด', bdKPlayers:'ผู้เล่น', bdKRuns:'จำนวนรอบที่เล่น',
+    // จอสัมผัส: ใช้คำว่า "ปุ่ม" แทน "คลิก"
+    r1tT:'ปุ่มซ้าย: ยิงทำลาย', r2tT:'ปุ่มขวา: ยิงยารักษา', goT:'ปุ่มซ้าย: ยิงประโยคผิด · ปุ่มขวา: รักษาประโยคถูก',
+    ctlKillT:'ปุ่มซ้าย · ยิงประโยคผิด', ctlCureT:'ปุ่มขวา · รักษาประโยคถูก',
+    survivorHitT:'นั่นคือผู้รอดชีวิต! ประโยคที่ถูกให้กดปุ่มขวาเพื่อรักษา',
+    cureFailT:'รักษาไม่ได้! ประโยคนี้ผิด ให้กดปุ่มซ้ายยิงทำลาย',
+    hintReachedT:'ประโยคผิดเหล่านี้เดินมาถึงตัวคุณ ควรยิงกระสุนทำลาย (ปุ่มซ้าย) ให้เร็วขึ้น',
+    hintWrongCureT:'ประโยคเหล่านี้ผิด ยารักษาจึงใช้ไม่ได้ ควรใช้กระสุนทำลาย (ปุ่มซ้าย)',
+    hintSurvivorT:'ประโยคเหล่านี้ถูกอยู่แล้ว ครั้งหน้าใช้กระสุนยารักษา (ปุ่มขวา)',
+    hintLostT:'ประโยคถูกเหล่านี้เดินผ่านไปเฉย ๆ ควรใช้กระสุนยารักษา (ปุ่มขวา)',
+    pauseTipT:'แตะซอมบี้เพื่อเล็ง (ถ้าไม่แตะ เกมจะเล็งตัวที่ใกล้ที่สุดให้) · ปุ่มซ้าย = ยิงทำลาย · ปุ่มขวา = รักษา',
+    tapHint:'ล็อกเป้าแล้ว กดปุ่มยิงทำลายหรือยิงรักษา',
   },
 };
 const LEVELS = [];   // filled by levels-1.js and levels-2.js
@@ -231,6 +253,9 @@ function T(key, ...args){
   args.forEach((v,i)=>{ s = s.split('{'+i+'}').join(v); });
   return s;
 }
+// touch screens say "button" where the mouse version says "click": use the "…T" text when there is one
+const isTouch = () => document.body.classList.contains('touch');
+function TT(key, ...args){ return T(isTouch() && STR.en[key+'T'] ? key+'T' : key, ...args); }
 // "adverb" in English mode, "คำกริยาวิเศษณ์ (adverb)" in Thai mode
 function posName(p, plural=false){
   const m = POS[p]; if(!m) return p;

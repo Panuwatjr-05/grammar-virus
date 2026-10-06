@@ -9,6 +9,9 @@ const ic = (name, cls='') => `<svg class="i ${cls}"><use href="#i-${name}"/></sv
 const starsHTML = n => [0,1,2].map(k => ic('star', k<n ? '' : 'off')).join('');
 const sayBtn = text => `<button class="say" data-say="${esc(text)}" title="${esc(T('listen'))}">${ic('volume')}</button>`;
 const sayButtons = root => root.querySelectorAll('[data-say]').forEach(b => b.onclick = () => Voice.speak(b.dataset.say, true));
+// the two controls: mouse buttons, or the trigger buttons on a touch screen
+const ctlStrip = () => { const [k, c] = isTouch() ? ['target','heart'] : ['mouse-l','mouse-r'];
+  return `<span class="ctl kill">${ic(k)}${esc(TT('ctlKill'))}</span><span class="ctl cure">${ic(c)}${esc(TT('ctlCure'))}</span>`; };
 const pageHead = (kicker, title, desc, side='') =>
   `<div class="page-head"><div><div class="kicker">${esc(kicker)}</div><h2>${esc(title)}</h2>${desc ? `<p>${esc(desc)}</p>` : ''}</div>${side}</div>`;
 
@@ -186,14 +189,19 @@ const UI = {
     };
     $('#btnVoice').onclick = e => { e.currentTarget.blur(); Store.d.settings.voice = !Store.d.settings.voice; Voice.enabled = Store.d.settings.voice; Store.save(); this.hud(); };
     $('#slowBtn').onclick = e => { e.currentTarget.blur(); useSlowmo(); };
-    document.querySelectorAll('.gunbtn').forEach(b => b.onclick = e => { e.currentTarget.blur(); setTouchGun(b.dataset.gun); });
+    // touch screens: the two gun legends are the triggers (left = kill rifle, right = rescue rifle)
+    document.querySelectorAll('.gunbtn').forEach(b => b.addEventListener('pointerdown', e => {
+      e.preventDefault(); setTouch(); fireTouch(b.dataset.gun);
+      b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 120);
+    }));
+    if(matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');     // phones / tablets
     Voice.enabled = Store.d.settings.voice;
     this.applyLang();
   },
   applyLang(){
     const lang = Store.d.settings.lang;
     document.documentElement.lang = lang;
-    document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = T(el.dataset.i18n));
+    document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = TT(el.dataset.i18n));
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = T(el.dataset.i18nPh); el.setAttribute('aria-label', T('playerLabel')); });
     document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang===lang));
     this.renderMenu();
@@ -275,8 +283,7 @@ const UI = {
       </div>
       <div class="brief-foot">
         <div class="mission">
-          <span class="ctl kill">${ic('mouse-l')}${esc(T('ctlKill'))}</span><span class="ctl cure">${ic('mouse-r')}${esc(T('ctlCure'))}</span>
-          <span>${ic('flame')}${esc(T('svEndless'))}</span><span class="heal">${ic('heart')}${esc(T('svHealShort'))}</span>
+          ${ctlStrip()}<span>${ic('flame')}${esc(T('svEndless'))}</span><span class="heal">${ic('heart')}${esc(T('svHealShort'))}</span>
           <span>${ic('skull')}${esc(T('svBossEvery'))}</span>
         </div>
         <div class="row">
@@ -326,8 +333,7 @@ const UI = {
       </div>
       <div class="brief-foot">
         <div class="mission">
-          <span class="ctl kill">${ic('mouse-l')}${esc(T('ctlKill'))}</span><span class="ctl cure">${ic('mouse-r')}${esc(T('ctlCure'))}</span>
-          <span>${ic('virus')}${esc(T('missionZ', L.count))}</span><span>${ic('skull')}${esc(boss)}</span>
+          ${ctlStrip()}<span>${ic('virus')}${esc(T('missionZ', L.count))}</span><span>${ic('skull')}${esc(boss)}</span>
         </div>
         <div class="row">
           <button class="btn" id="brStart">${ic('play')}<span>${esc(T('start'))}</span></button>
@@ -407,7 +413,6 @@ const UI = {
     $('#hLeftLbl').textContent = bossTime ? T('hudBoss') : T('hudLeft');
     $('#slowN').textContent = G.slow; $('#slowBtn').disabled = G.slow <= 0;
     $('#btnVoice use').setAttribute('href', Store.d.settings.voice ? '#i-volume' : '#i-volume-off');
-    document.querySelectorAll('.gunbtn').forEach(b => b.classList.toggle('on', b.dataset.gun===G.touchGun));
   },
   pause(p){
     if(!G || !['intro','wave','bossIntro','boss','bossDead'].includes(G.phase)) return;
@@ -519,7 +524,7 @@ const UI = {
         ${s.speakScore!=null ? stat('mic','sSpeak',s.speakScore+'%') : ''}${s.mastered ? stat('check','sMastered',s.mastered) : ''}</div>`;
     // mistakes first, each with the full answer key; then the boss; then what went right (folded)
     const cards = (xs, seen) => `<ul class="list">${xs.map(x => answerCard(x, seen)).join('')}</ul>`;
-    const sec = (icon, key, hint) => `<div class="sec">${ic(icon)}${esc(T(key))}</div>${hint ? `<p class="sec-hint">${esc(T(hint))}</p>` : ''}`;
+    const sec = (icon, key, hint) => `<div class="sec">${ic(icon)}${esc(T(key))}</div>${hint ? `<p class="sec-hint">${esc(TT(hint))}</p>` : ''}`;
     const fold = (key, n, list) => `<details><summary class="sec">${ic('chev-r','chev')}${esc(T(key))} (${n})</summary>${list}</details>`;
     if(s.reached.length) h += sec('alert','secBitten','hintReached') + cards(s.reached, 'bad');
     if(s.wrongCure.length) h += sec('x','secWrongCure','hintWrongCure') + cards(s.wrongCure, 'bad');
@@ -636,11 +641,17 @@ cv.addEventListener('mousedown', e => {
   if(e.button!==0 && e.button!==2) return;
   mouse.x = e.clientX; mouse.y = e.clientY; shoot(e.clientX, e.clientY, gunFor(e));
 });
-// touch / pen: fire whichever gun is selected in the gun bar
+// touch screens: show the trigger buttons and say "button" instead of "click" in the help texts
+function setTouch(){
+  if(isTouch()) return;
+  document.body.classList.add('touch');
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = TT(el.dataset.i18n));
+}
+// touch / pen: a tap aims at the zombie under the finger; the left / right trigger buttons fire
 cv.addEventListener('pointerdown', e => {
   if(e.pointerType==='mouse') return;
-  e.preventDefault(); document.body.classList.add('touch');
-  mouse.x = e.clientX; mouse.y = e.clientY; shoot(e.clientX, e.clientY, G ? G.touchGun : 'kill');
+  e.preventDefault(); setTouch();
+  pickTarget(e.clientX, e.clientY);
 });
 cv.addEventListener('contextmenu', e => e.preventDefault());
 addEventListener('contextmenu', e => { if(document.body.classList.contains('ingame')) e.preventDefault(); });
@@ -656,7 +667,9 @@ addEventListener('resize', () => { resize(); render(); });   // redraw at once: 
 let lastFrame = performance.now();
 function loop(now){
   const dt = Math.min(.05, (now-lastFrame)/1000); lastFrame = now;
-  update(dt); render();
+  update(dt);
+  if(isTouch()) aimAtTarget();            // touch screens: both rifles follow the targeted zombie
+  render();
   requestAnimationFrame(loop);
 }
 resize(); mouse.x = W/2; mouse.y = H/2;

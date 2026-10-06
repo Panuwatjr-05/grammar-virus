@@ -65,6 +65,7 @@ if(location.hash.startsWith('#demo-')){
       if(mode==='brief') UI.briefing(lvNum ? +lvNum-1 : 4);
       if(mode==='guide'){ UI.tab = 'guide'; UI.renderMenu(); }
       if(mode==='wave'){ startLevel(4); frames(60*10); mouse.x = W*.56; mouse.y = H*.5; render(); }
+      if(mode==='mobile'){ setTouch(); startLevel(4); frames(60*10); aimAtTarget(); render(); }   // touch: triggers + target
       if(mode==='rescue'){                                   // kill broken sentences while waiting, then capture a cure shot
         startLevel(4); let i = 0, z = null;
         const killWrong = () => { const w = G.zombies.find(w => w.state==='walk' && w.wrong && w.d < 12 && w.body);
@@ -201,6 +202,22 @@ if(location.hash === '#selftest'){
       const tk = G.tracers.filter(t => t.gun==='kill'), tc = G.tracers.filter(t => t.gun==='cure'), [sk, sc] = G.shells.slice(-2);
       ok(tk.length===1 && tc.length===1 && tk[0].x1 < W*.45 && tc[0].x1 > W*.55 && sk.vx < 0 && !sk.cure && sc.vx > 0 && sc.cure,
          'two rifles: kill rounds fire from the left one, cure rounds from the right one, each on its own fire cycle');
+
+      /* ---- 2c. touch screens: tap to target, left / right trigger buttons ---- */
+      setTouch();
+      startLevel(0); G.phase = 'wave'; G.spawnT = 999;
+      const tFar = mk(true, -1, 9), tNear = mk(false, 1, 6); render();
+      ok(touchTarget()===tNear, 'touch: the closest zombie is targeted automatically');
+      const touchEv = (el, x, y) => el.dispatchEvent(new PointerEvent('pointerdown', { pointerType:'touch', clientX:x, clientY:y, bubbles:true, cancelable:true }));
+      touchEv(cv, tFar.body.x+tFar.body.w/2, tFar.body.y+tFar.body.h*.5);
+      ok(G.target===tFar.id && tFar.state==='walk' && tNear.state==='walk', 'touch: tapping a zombie only targets it (no shot)');
+      G.guns.kill.cool = G.guns.cure.cool = 0;
+      touchEv(document.querySelector('.gunbtn.kill'), 0, 0); render();
+      touchEv(document.querySelector('.gunbtn.cure'), 0, 0);
+      ok(tFar.state==='dying' && tNear.state==='rescued' && G.good===2,
+         'touch: left button = kill round at the target, right button = cure round at the next closest one');
+      ok(TT('go')===T('goT') && document.querySelector('[data-i18n="r1t"]').textContent===T('r1tT'), 'touch: help texts say "button" instead of "click"');
+      document.body.classList.remove('touch'); UI.applyLang();
 
       /* ---- 2b. survival mode + leaderboard ---- */
       const realSpeed = Store.d.settings.speed;

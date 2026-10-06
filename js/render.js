@@ -236,12 +236,10 @@ function drawRifle(gun){
   ctx.fillStyle = 'rgba(160,220,255,.55)'; ctx.fillRect(50.6*u, -13.8*u, .7*u, 6.8*u);
   R(31, -16, 3, 3.8, .6, '#1c2127');
   ctx.fillStyle = '#1c2127'; ctx.beginPath(); ctx.arc(36.5*u, -10.5*u, 1.7*u, 0, 7); ctx.fill();
-  // colour band on the barrel shroud + indicator light: red = kill rifle, green = cure rifle
-  // (the light flares when it fires and is bigger when this rifle is selected on a touch screen)
+  // colour band on the barrel shroud + indicator light: red = kill rifle, green = cure rifle (the light flares when it fires)
   R(76.4, -3.6, 1.6, 6.2, .3, accent);
-  const touch = document.body.classList.contains('touch');
   ctx.globalAlpha = .45 + Math.min(1, st.recoil*1.5)*.55; ctx.fillStyle = accent;
-  ctx.beginPath(); ctx.arc(56*u, -2.4*u, (touch && G.touchGun===gun ? 1.4 : 1.05)*u, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(56*u, -2.4*u, 1.05*u, 0, 7); ctx.fill();
   ctx.globalAlpha = 1;
   // muzzle flash: the brake throws the blast out to the sides
   if(st.flash > 0){
@@ -262,6 +260,17 @@ function drawShells(){
     ctx.restore();
   }
   ctx.globalAlpha = 1;
+}
+// touch screens: pulsing brackets around the sign of the zombie the trigger buttons will shoot
+function drawTargetMark(r){
+  const p = 7 + Math.sin(performance.now()/150)*2.5, k = 13, x0 = r.x-p, y0 = r.y-p, x1 = r.x+r.w+p, y1 = r.y+r.h+p;
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const corners = () => { ctx.beginPath();
+    ctx.moveTo(x0, y0+k); ctx.lineTo(x0, y0); ctx.lineTo(x0+k, y0); ctx.moveTo(x1-k, y0); ctx.lineTo(x1, y0); ctx.lineTo(x1, y0+k);
+    ctx.moveTo(x1, y1-k); ctx.lineTo(x1, y1); ctx.lineTo(x1-k, y1); ctx.moveTo(x0+k, y1); ctx.lineTo(x0, y1); ctx.lineTo(x0, y1-k); ctx.stroke(); };
+  ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 6; corners();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; corners();
+  ctx.restore();
 }
 // left half red (left click = kill), right half green (right click = rescue)
 function drawCrosshair(){
@@ -332,6 +341,7 @@ function render(){
     z.body = { x:x-.45*s, y:y-1.85*s, w:.9*s, h:1.85*s };
   }
   for(const z of list){ const s = pxPerM(z.d)*(z.big?1.35:1); drawLabel(z, laneX(z.lane,z.d), feetY(z.d)-1.85*s, s); }
+  if(isTouch() && G.phase==='wave'){ const t = G.zombies.find(z => z.id===G.target && live(z)); if(t && t.rect) drawTargetMark(t.rect); }
   for(const t of G.tracers){
     const a = Math.min(1, t.life*11);
     ctx.strokeStyle = t.gun==='cure' ? `rgba(91,227,154,${a})` : `rgba(255,225,150,${a})`; ctx.lineWidth = t.gun==='cure' ? 3 : 2;
@@ -361,10 +371,11 @@ function render(){
   const nn = String(G.idx+1).padStart(2,'0');
   if(G.phase==='intro'){
     // survival sets its own banner for every wave ("Wave 3 cleared · +600 bonus" / "WAVE 4")
-    if(G.banner) drawBanner(G.banner.kicker, G.banner.title, G.banner.sub, C.warn, false);
-    else drawBanner(G.mode==='review' ? T('hudReview') : T('introKicker', nn), G.mode==='review' ? T('review') : G.L.topic, T('go'), C.acid, false);
+    if(G.banner) drawBanner(G.banner.kicker, G.banner.title, G.banner.sub || TT('go'), C.warn, false);
+    else drawBanner(G.mode==='review' ? T('hudReview') : T('introKicker', nn), G.mode==='review' ? T('review') : G.L.topic, TT('go'), C.acid, false);
   }
   if(G.phase==='bossIntro') drawBanner(G.mode==='survival' ? T('svBossKicker', G.wave) : `${T('introKicker', nn)} · ${G.L.topic}`, T('bossIncoming'), T('bossHint'), C.bad, true);
   ctx.restore();
-  if(!G.paused && (G.phase==='wave' || G.phase==='intro')) drawCrosshair();
+  // (touch screens show brackets on the target instead, so the crosshair never covers a sign)
+  if(!G.paused && (G.phase==='wave' || G.phase==='intro') && !isTouch()) drawCrosshair();
 }

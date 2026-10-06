@@ -25,7 +25,7 @@ function newState(mode, idx, L, pool, wrongRatio){
     speedMul: SPEEDS[Store.d.settings.speed] ?? 1,
     hp:100, score:0, combo:0, bestCombo:0, good:0, decisions:0, slow:0, slowT:0,
     zombies:[], parts:[], texts:[], tracers:[], boss:null,
-    guns:{ kill:{ cool:0, recoil:0, flash:0 }, cure:{ cool:0, recoil:0, flash:0 } }, touchGun:'kill',
+    guns:{ kill:{ cool:0, recoil:0, flash:0 }, cure:{ cool:0, recoil:0, flash:0 } }, target:null, tapHinted:false,
     spawned:0, resolved:0, spawnT:.8, phase:'intro', phaseT:1.8, clock:0, hurt:0, shake:0, paused:false, shells:[],
     fixed:[], rescued:[], shotRight:[], wrongCure:[], reached:[], lost:[], decTimes:[],
     bossErrors:0, bossErr0:0, bossText:null, bossWords:null, speakScore:null, mastered:0 };
@@ -56,7 +56,7 @@ function startSurvival(){
   G = newState('survival', -1, Object.assign({ topic:'Survival', th:'โหมดเอาชีวิตรอด' }, survivalWave(1)), pool, .55);
   // everyone plays at normal speed so the leaderboard is fair; the record to beat is shown in the HUD
   Object.assign(G, { speedMul:1, wave:1, waveErr0:0, bossesBeaten:0, bossBag:[], phaseT:2.2, record:Store.boardTop(),
-    banner:{ kicker:`${T('svKicker')} · ${T('svTitle')}`, title:T('svWave', 1), sub:T('go') } });
+    banner:{ kicker:`${T('svKicker')} · ${T('svTitle')}`, title:T('svWave', 1), sub:null } });     // sub: the controls line
   UI.enterGame();
 }
 // the wave is over: bonus (doubled when it had no mistakes), then a boss after every 3rd wave, else the next wave
@@ -88,6 +88,7 @@ function nextItem(){
   return G.bag.pop();
 }
 const gone = z => z.state==='dying' || z.state==='leaving' || z.state==='rescued';
+const live = z => z.state==='walk' || z.state==='attack';
 // signs float near the horizon at every distance, so two live zombies in one lane would always overlap:
 // one zombie per lane, and keep neighbours apart while their signs are still small and far away
 function pickLane(){
@@ -160,7 +161,8 @@ function ejectShell(gun){
   G.shells.push({ x:p.x, y:p.y, vx:nx*sp - Math.cos(a)*60, vy:ny*sp - Math.sin(a)*60 - 120,
                   rot:Math.random()*6, vr:(Math.random() < .5 ? -1 : 1)*(10 + Math.random()*8), life:1.2, cure:gun==='cure' });
 }
-function shoot(px, py, gun='kill'){
+// target = the zombie to hit (touch triggers); without it the shot hits whatever is under (px, py)
+function shoot(px, py, gun='kill', target=null){
   if(!G || G.paused || !['intro','wave','bossIntro','boss'].includes(G.phase)) return;
   const g = G.guns[gun];
   if(!g || g.cool > 0) return;                       // each rifle has its own fire cycle, so left / right can alternate fast
@@ -174,8 +176,8 @@ function shoot(px, py, gun='kill'){
     return;
   }
   if(G.phase!=='wave') return;
-  const hit = G.zombies.filter(z=>z.state==='walk'||z.state==='attack').sort((a,b)=>a.d-b.d)
-                       .find(z=>inRect(px,py,z.rect)||inRect(px,py,z.body));
+  const hit = target && live(target) ? target
+            : G.zombies.filter(live).sort((a,b)=>a.d-b.d).find(z=>inRect(px,py,z.rect)||inRect(px,py,z.body));
   if(!hit){ burst(px, py, gun==='kill' ? '#8a8a8a' : C.ok, 5, 80); return; }
   if(gun==='kill') killHit(hit); else cureHit(hit);
   UI.hud();
@@ -193,7 +195,7 @@ function killHit(z){
   } else {
     burst(cx,headY,'#cfa36b',16,200);
     if(decide(z, false)) G.shotRight.push(record(z));
-    addText(W/2, H*.2, T('survivorHit'), C.bad, fs*.8, 2.6);
+    addText(W/2, H*.2, TT('survivorHit'), C.bad, fs*.8, 2.6);
     SFX.bad(); hurt(15);
   }
   addText(W/2, H*.2+fs*1.25, posLine(it), POS[it.pos].color, fs*.75, 2.6);
@@ -211,7 +213,7 @@ function cureHit(z){
     burst(cx,headY,'#9aa5b1',12,140);
     if(decide(z, false)) G.wrongCure.push(record(z));
     z.sp = Math.min(z.sp*1.35, 1.9);
-    addText(W/2, H*.2, T('cureFail'), C.bad, fs*.8, 2.6);
+    addText(W/2, H*.2, TT('cureFail'), C.bad, fs*.8, 2.6);
     SFX.cureFail(); hurt(10);
   }
   addText(W/2, H*.2+fs*1.25, posLine(it), POS[it.pos].color, fs*.75, 2.6);
@@ -220,7 +222,32 @@ function useSlowmo(){
   if(!G || G.paused || G.slow<=0 || G.slowT>0 || !(G.phase==='wave' || G.phase==='boss')) return;
   G.slow--; G.slowT = 5; SFX.slow(); UI.hud();
 }
-function setTouchGun(gun){ if(G){ G.touchGun = gun; UI.hud(); } }
+/* ---------- touch screens: tap a zombie to target it, then press the left (kill) or right (rescue) trigger ---------- */
+// the zombie the triggers shoot at: the one the player tapped, else the closest one
+function touchTarget(){
+  if(!G || G.phase!=='wave') return null;
+  let z = G.zombies.find(z => z.id===G.target && live(z));
+  if(!z){ z = G.zombies.filter(live).sort((a,b) => a.d-b.d)[0] || null; G.target = z ? z.id : null; }
+  return z;
+}
+// a tap on the scene only aims (it never fires, so the player still has to choose kill or rescue)
+function pickTarget(px, py){
+  if(!G || G.paused || G.phase!=='wave') return;
+  const z = G.zombies.filter(live).sort((a,b) => a.d-b.d).find(z => inRect(px,py,z.rect) || inRect(px,py,z.body));
+  if(!z) return;
+  G.target = z.id; SFX.tile(0);
+  if(!G.tapHinted){ G.tapHinted = true; addText(W/2, H*.3, T('tapHint'), C.text, 20, 2.2); }
+}
+function fireTouch(gun){
+  const z = touchTarget();
+  if(z && z.body) shoot(z.body.x+z.body.w/2, z.body.y+z.body.h*.55, gun, z);
+  else shoot(mouse.x, mouse.y, gun);
+}
+// both rifles follow the targeted zombie
+function aimAtTarget(){
+  const z = touchTarget();
+  if(z && z.body){ mouse.x = z.body.x+z.body.w/2; mouse.y = z.body.y+z.body.h*.55; }
+}
 
 /* ---------- boss: find every word of the requested part of speech ---------- */
 const bossToks = B => B.words.map((w,i) => [[w, B.found.has(i) ? POS[B.found.get(i)].color : null]]);
