@@ -90,6 +90,13 @@ if(location.hash.startsWith('#demo-')){
       // survival + leaderboard (with the sample leaderboard above)
       if(mode==='menu'){ DEMO_BOARD(); UI.tab = 'play'; if(lvNum) UI.unit = UNITS[+lvNum-1].key; UI.renderMenu(); }   // #demo-menu2 = Tenses lesson
       if(mode==='board'){ DEMO_BOARD(); UI.tab = 'board'; UI.renderMenu(); }
+      if(mode==='quiz'){                                     // #demo-quiz = a question, #demo-quiz2 = a post-test result after a 50% pre-test
+        const post = +lvNum===2; Store.d.player = 'Ploy'; Store.d.tests = [];
+        if(post) Store.addTest({ name:'Ploy', unit:'tense', kind:'pre', correct:5, total:10, pct:50, date:new Date(Date.now()-864e5).toISOString() });
+        UI.quiz('tense', post ? 'post' : 'pre'); document.querySelector('#qzGo').click();
+        for(let k = 0; k < (post ? 10 : 2); k++){ const x = UI.qz.qs[UI.qz.i], ans = k===3 ? x.wrong : !x.wrong;
+          document.querySelector(`.qz-btns [data-a="${ans ? 1 : 0}"]`).click(); }
+      }
       if(mode==='stats'){                                    // #demo-stats2 = only the 2nd sample player's data
         DEMO_SESSIONS(); UI.statsPlayer = lvNum ? Store.nameKey(DEMO_PLAYERS[+lvNum-1]) : null; UI.tab = 'stats'; UI.renderMenu();
       }
@@ -356,6 +363,25 @@ if(location.hash === '#selftest'){
       ok(UI.statsPlayer==='' && stRows(0).length===1 && document.querySelector('#stBody .kpi b').textContent==='1',
          'stats: games without a player name are grouped as "(no name)"');
       UI.statsPlayer = null; Store.d.sessions = realSessions;
+
+      /* ---- 5c. pre-test / post-test ---- */
+      const realTests = Store.d.tests; Store.d.tests = []; Store.d.player = 'Tester';
+      const pq = makeQuiz('tense', 'pre'), oq = makeQuiz('tense', 'post'), plains = q => q.map(x => parseMarked(x.e.t).plain);
+      ok(pq.length===10 && oq.length===10 && !plains(pq).some(p => plains(oq).includes(p)) && pq.filter(x => x.wrong).length===5
+         && new Set(pq.map(x => x.li)).size===8 && new Set(makeQuiz('pos','pre').map(x => x.li)).size===10,
+         'quiz: 10 questions, half of them broken, every level of the lesson asked, pre and post never share a sentence');
+      const answerAll = pick => { for(let k = 0; k < 10; k++){ const x = UI.qz.qs[UI.qz.i]; document.querySelector(`.qz-btns [data-a="${pick(x) ? 1 : 0}"]`).click(); } };
+      UI.quiz('tense', 'pre'); document.querySelector('#qzGo').click(); answerAll(() => true);
+      ok(Store.d.tests.length===1 && Store.d.tests[0].pct===50 && Store.d.tests[0].kind==='pre' && document.querySelector('.qz-score').textContent==='50%'
+         && document.querySelectorAll('#qzBody li.ans').length===5, 'quiz: answering "correct" to everything scores 50%, is saved, and explains the 5 mistakes');
+      UI.quiz('tense', 'post'); document.querySelector('#qzGo').click(); answerAll(x => !x.wrong);
+      ok(Store.d.tests[1].pct===100 && /50%.*100%/.test(document.querySelector('.qz-cmp').textContent), 'quiz: the post-test is compared with the pre-test (50% → 100%)');
+      UI.tab = 'stats'; UI.renderMenu();
+      ok(document.querySelector('#stBody .qtable .gain.up') && document.querySelector('#stBody .qtable .gain.up').textContent==='+50',
+         'stats: pre-test vs post-test table shows the improvement (+50)');
+      UI.tab = 'play'; UI.unit = 'tense'; UI.renderMenu();
+      ok(document.querySelectorAll('#testBar .qzpct').length===2, 'play tab: the test buttons show your last scores');
+      UI.unit = 'pos'; Store.d.tests = realTests; UI.menu();
 
       /* ---- 6. menus, guide, language switch, pause ---- */
       UI.menu();

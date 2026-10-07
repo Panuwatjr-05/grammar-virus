@@ -156,6 +156,18 @@ const STR = {
     hintLostT:'These correct sentences walked past you. Rescue them with a cure round (right button).',
     pauseTipT:'Tap a zombie to target it (the closest one is targeted for you) · Left button = kill · Right button = rescue',
     tapHint:'Target locked. Press KILL or RESCUE',
+    // pre-test / post-test
+    qzPre:'Pre-test', qzPost:'Post-test', qzTestsLbl:'Tests', qzTitlePre:'What do you know already?', qzTitlePost:'How much did you learn?',
+    qzDesc:'{0} sentences. Decide if each one is correct or wrong. There is no timer and no hint, so just answer what you think.',
+    qzWhy:'Your score before and after playing shows how much the game helped you.', qzName:'Your name', qzNeedName:'Type your name first so your score is saved.',
+    qzStart:'Start test', qzQ:'Question {0} of {1}', qzAsk:'Is this sentence correct?', qzRight:'Correct', qzWrong:'Wrong',
+    qzDone:'Test finished', qzScore:'{0} / {1} correct', qzCompare:'Before playing {0}% → after playing {1}%',
+    qzGainUp:'You improved by {0} points!', qzGainSame:'The same as before. Play the levels again, then retry.', qzGainDown:'{0} points lower. Review your notebook and try again.',
+    qzPreNext:'Now play the lesson, then take the post-test to see how much you improved.', qzReview:'Check your mistakes', qzAllRight:'No mistakes at all. Excellent!',
+    qzYouSaid:'You said: {0}', qzPlay:'Start the lesson', qzLast:'Last time: {0}%', qzNone:'not done',
+    qzSuggest:'Before you start: take the 10-question pre-test so you can see how much you learn.',
+    stTests:'Pre-test vs post-test', stTestsHint:"Each player's latest score in each lesson.", stLesson:'Lesson', stPre:'Before', stPost:'After', stGain:'Change',
+    stAvgGain:'On average players improved by {0} points ({1} players did both tests).', stNoTests:'No tests yet. Start one from the Play tab.',
   },
   th:{
     subtitle:'เกมยิงซอมบี้ฝึกไวยากรณ์อังกฤษ', menuKicker:'แจ้งเตือนการระบาด · Parts of Speech & Tenses',
@@ -266,6 +278,18 @@ const STR = {
     hintLostT:'ประโยคถูกเหล่านี้เดินผ่านไปเฉย ๆ ควรใช้กระสุนยารักษา (ปุ่มขวา)',
     pauseTipT:'แตะซอมบี้เพื่อเล็ง (ถ้าไม่แตะ เกมจะเล็งตัวที่ใกล้ที่สุดให้) · ปุ่มซ้าย = ยิงทำลาย · ปุ่มขวา = รักษา',
     tapHint:'ล็อกเป้าแล้ว กดปุ่มยิงทำลายหรือยิงรักษา',
+    // แบบทดสอบก่อน-หลังเรียน
+    qzPre:'แบบทดสอบก่อนเรียน', qzPost:'แบบทดสอบหลังเรียน', qzTestsLbl:'แบบทดสอบ', qzTitlePre:'ตอนนี้รู้แค่ไหน?', qzTitlePost:'เรียนแล้วเก่งขึ้นแค่ไหน?',
+    qzDesc:'มี {0} ข้อ ตัดสินว่าแต่ละประโยคถูกหรือผิด ไม่จับเวลาและไม่มีคำใบ้ ตอบตามที่คิดได้เลย',
+    qzWhy:'คะแนนก่อนและหลังเล่นจะบอกว่าเกมช่วยให้คุณเก่งขึ้นแค่ไหน', qzName:'ชื่อของคุณ', qzNeedName:'พิมพ์ชื่อก่อน เพื่อบันทึกคะแนน',
+    qzStart:'เริ่มทำแบบทดสอบ', qzQ:'ข้อ {0} จาก {1}', qzAsk:'ประโยคนี้ถูกหรือผิด?', qzRight:'ถูก', qzWrong:'ผิด',
+    qzDone:'ทำแบบทดสอบเสร็จแล้ว', qzScore:'ตอบถูก {0} จาก {1} ข้อ', qzCompare:'ก่อนเล่น {0}% → หลังเล่น {1}%',
+    qzGainUp:'เก่งขึ้น {0} คะแนน!', qzGainSame:'เท่าเดิม ลองเล่นด่านอีกรอบแล้วทำใหม่', qzGainDown:'ลดลง {0} คะแนน ลองทบทวนสมุดคำผิดแล้วทำใหม่',
+    qzPreNext:'ต่อไปเล่นด่านในบทนี้ แล้วกลับมาทำแบบทดสอบหลังเรียน เพื่อดูว่าเก่งขึ้นแค่ไหน', qzReview:'เฉลยข้อที่ตอบผิด', qzAllRight:'ไม่ผิดเลยสักข้อ ยอดเยี่ยม!',
+    qzYouSaid:'คุณตอบว่า: {0}', qzPlay:'เริ่มเล่นบทนี้', qzLast:'ครั้งล่าสุด: {0}%', qzNone:'ยังไม่ได้ทำ',
+    qzSuggest:'ก่อนเริ่ม: ทำแบบทดสอบก่อนเรียน 10 ข้อ จะได้รู้ว่าเล่นแล้วเก่งขึ้นแค่ไหน',
+    stTests:'แบบทดสอบก่อน-หลังเรียน', stTestsHint:'คะแนนล่าสุดของผู้เล่นแต่ละคนในแต่ละบท', stLesson:'บทเรียน', stPre:'ก่อนเรียน', stPost:'หลังเรียน', stGain:'เปลี่ยนแปลง',
+    stAvgGain:'โดยเฉลี่ยผู้เล่นเก่งขึ้น {0} คะแนน (ทำครบทั้งสองชุด {1} คน)', stNoTests:'ยังไม่มีใครทำแบบทดสอบ เริ่มได้ที่หน้าเล่น',
   },
 };
 const LEVELS = [];   // filled by levels-1.js and levels-2.js

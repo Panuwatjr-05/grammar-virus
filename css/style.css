@@ -496,6 +496,35 @@ table.board{width:100%;border-collapse:collapse;font-size:14.5px}
 .svneed{margin-top:8px;color:var(--bad);font-size:13.5px}
 .svneed:empty{display:none}
 
+/* ---------- pre-test / post-test ---------- */
+.testbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.testbar .label{margin-right:4px}
+.testbar .btn{flex:1;min-width:150px}
+.qzpct{margin-left:4px;padding:2px 7px;border-radius:4px;background:var(--acid-soft);color:var(--acid);letter-spacing:.04em}
+#qzPanel{max-width:660px}
+.qz-title{font-size:clamp(26px,3.6vw,34px);margin-top:8px}
+.qz-desc{margin-top:10px;color:var(--text-2);line-height:1.6}
+.qz-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.qzbar{--c:var(--acid);max-width:none;margin:12px 0 0}
+.qz-ask{margin-top:26px;color:var(--text-2);text-align:center}
+.qz-sent{margin-top:12px;padding:24px 20px;border:1px solid var(--line-2);border-radius:6px;background:rgba(255,255,255,.03);
+  font-size:clamp(20px,3.4vw,26px);font-weight:600;line-height:1.45;text-align:center}
+mark.hl{color:var(--hl);font-weight:700;box-shadow:inset 0 -3px 0 rgba(255,216,77,.5)}
+.qz-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.qz-btns .btn{min-height:64px;font-size:17px}
+.qz-btns .btn .i{width:22px;height:22px}
+.btn.qz-ok{--b:var(--ok);--t:#04170d}
+.btn.qz-bad{--b:var(--bad);--t:#fff}
+.qz-score{font-family:var(--ui);font-size:60px;font-weight:700;line-height:1;margin-top:16px;color:var(--c)}
+.qz-cmp{display:flex;align-items:center;gap:10px;margin-top:16px;padding:12px 14px;border-radius:5px;border:1px solid var(--line-2);
+  font-family:var(--ui);font-size:19px;font-weight:700}
+.qz-cmp.up{border-color:rgba(91,227,154,.45);background:rgba(91,227,154,.1);color:var(--ok)}
+.qznote{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;padding:12px 14px;border:1px solid rgba(184,245,61,.3);
+  border-radius:5px;background:var(--acid-soft);font-size:14.5px}
+.qznote > span{flex:1;min-width:200px}
+.qznote > .i{color:var(--acid)}
+.gain{font-family:var(--ui);color:var(--text-2)} .gain.up{color:var(--ok)} .gain.down{color:var(--bad)}
+
 /* ---------- responsive ---------- */
 @media (max-width:940px){ .play{grid-template-columns:1fr} .rules{grid-template-columns:repeat(2,minmax(0,1fr))}
   .svcard{grid-template-columns:1fr} .sv-cta{flex-direction:row;flex-wrap:wrap} }

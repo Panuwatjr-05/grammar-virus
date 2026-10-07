@@ -20,6 +20,16 @@ LEVELS.forEach(L => { L.unit = L.unit || 'pos'; });
 const unitLevels = u => LEVELS.map((_,i) => i).filter(i => LEVELS[i].unit===u);
 const lvNo = i => unitLevels(LEVELS[i].unit).indexOf(i) + 1;
 const nextInUnit = i => { const l = unitLevels(LEVELS[i].unit); return l[l.indexOf(i)+1] ?? -1; };
+// pre-test / post-test: pre-tests use a lesson's even-numbered sentences, post-tests the odd ones (so they never repeat),
+// taken one level at a time so every topic is asked; half of the questions show the broken version
+const QUIZ_N = 10;
+function makeQuiz(unit, kind){
+  const banks = unitLevels(unit).map(li => shuffleArr(LEVELS[li].items.filter((_,k) => k%2 === (kind==='pre' ? 0 : 1)).map(e => ({ e, li }))));
+  const picked = [];
+  for(let r = 0; picked.length < QUIZ_N && r < 20; r++) shuffleArr(banks.slice()).forEach(b => { if(picked.length < QUIZ_N && b[r]) picked.push(b[r]); });
+  const wrong = shuffleArr(picked.map((_,k) => k < picked.length/2));
+  return shuffleArr(picked).map((x,k) => Object.assign(x, { wrong:wrong[k], text:wrong[k] ? x.e.w : x.e.t }));
+}
 // the first level of each lesson is open; the next one opens once the one before it is cleared
 const isUnlocked = i => { const l = unitLevels(LEVELS[i].unit), k = l.indexOf(i); return k===0 || (Store.d.stars[l[k-1]] || 0) > 0; };
 const speakBonus = score => score>=80 ? 300 : score>=50 ? 100 : 0;

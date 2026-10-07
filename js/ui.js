@@ -173,6 +173,30 @@ function playerTable(players, sel){
 
 const uName = u => { const x = UNITS.find(x => x.key===u); return x ? (isTH() ? x.th : x.en) : ''; };
 
+// each player's latest pre-test and post-test score in each lesson, and the average improvement
+function testsHTML(pk){
+  const m = new Map();
+  Store.d.tests.forEach(t => {
+    const k = Store.nameKey(t.name); if(pk!=null && k!==pk) return;
+    const id = k+'|'+t.unit; let r = m.get(id);
+    if(!r){ r = { name:nameOf(t.name), unit:t.unit, pre:null, post:null }; m.set(id, r); }
+    if(!r[t.kind] || t.date > r[t.kind].date) r[t.kind] = t;
+  });
+  const rows = [...m.values()].sort((a,b) => a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit));
+  const gains = rows.filter(r => r.pre && r.post).map(r => r.post.pct - r.pre.pct);
+  const avg = gains.length ? Math.round(gains.reduce((a,b) => a+b, 0)/gains.length) : 0;
+  const sign = n => (n > 0 ? '+' : '') + n;
+  let h = `<div class="sec">${ic('check')}${esc(T('stTests'))}</div>`;
+  if(!rows.length) return h + `<p class="sec-hint">${esc(T('stNoTests'))}</p>`;
+  h += `<p class="sec-hint">${esc(T('stTestsHint'))}${gains.length ? ' ' + esc(T('stAvgGain', sign(avg), gains.length)) : ''}</p>`;
+  return h + `<div class="tbl"><table class="board stt qtable"><thead><tr><th>${esc(T('bdPlayer'))}</th><th>${esc(T('stLesson'))}</th>
+      <th class="num">${esc(T('stPre'))}</th><th class="num">${esc(T('stPost'))}</th><th class="num">${esc(T('stGain'))}</th></tr></thead><tbody>${rows.map(r => {
+        const g = r.pre && r.post ? r.post.pct - r.pre.pct : null;
+        return `<tr><td class="pn">${esc(r.name)}</td><td>${esc(uName(r.unit))}</td><td class="num">${r.pre ? r.pre.pct+'%' : '–'}</td>
+          <td class="num">${r.post ? r.post.pct+'%' : '–'}</td><td class="num"><b class="gain${g>0 ? ' up' : g<0 ? ' down' : ''}">${g==null ? '–' : sign(g)}</b></td></tr>`;
+      }).join('')}</tbody></table></div>`;
+}
+
 const UI = {
   tab:'play', boardView:'players', unit:'pos', guideUnit:'pos',
   statsPlayer:null,          // stats tab: name key of the player being shown, null = everyone
@@ -245,6 +269,11 @@ const UI = {
       b.onclick = () => { audio(); this.briefing(i); };
       box.appendChild(b);
     });
+    // pre-test / post-test of this lesson, with the current player's last score
+    const lastT = k => Store.d.player ? Store.lastTest(Store.d.player, u, k) : null;
+    $('#testBar').innerHTML = `<span class="label">${esc(T('qzTestsLbl'))}</span>` + ['pre','post'].map(k => { const t = lastT(k);
+      return `<button class="btn ghost sm" data-k="${k}">${ic(k==='pre' ? 'notebook' : 'check')}<span>${esc(T(k==='pre' ? 'qzPre' : 'qzPost'))}</span>${t ? `<b class="qzpct">${t.pct}%</b>` : ''}</button>`; }).join('');
+    $('#testBar').querySelectorAll('button').forEach(b => b.onclick = () => { audio(); this.quiz(u, b.dataset.k); });
     $('#starsTotal').textContent = T('starsTotal', total, ids.length*3);
     $('#playBtn span').textContent = T('playLevel', lvNo(next));
     $('#playBtn').onclick = () => { audio(); this.briefing(next); };
@@ -337,6 +366,8 @@ const UI = {
           ${watchHTML(L)}
         </div>
       </div>
+      ${lvNo(i)===1 && !(Store.d.player && Store.lastTest(Store.d.player, L.unit, 'pre')) ? `<div class="qznote">${ic('notebook')}<span>${esc(T('qzSuggest'))}</span>
+        <button class="btn sm" id="brQuiz">${esc(T('qzPre'))}</button></div>` : ''}
       <div class="brief-foot">
         <div class="mission">
           ${ctlStrip()}<span>${ic('virus')}${esc(T('missionZ', L.count))}</span><span>${ic('skull')}${esc(boss)}</span>
@@ -348,8 +379,81 @@ const UI = {
       </div>`;
     sayButtons($('#brBody'));
     $('#brStart').onclick = () => startLevel(i);
+    const bq = $('#brQuiz'); if(bq) bq.onclick = () => this.quiz(L.unit, 'pre');
     $('#brBack').onclick = () => this.menu();
     this.show('briefing');
+  },
+
+  /* ---------- pre-test / post-test: QUIZ_N "correct or wrong?" questions per lesson ---------- */
+  quiz(unit, kind){
+    const title = T(kind==='pre' ? 'qzPre' : 'qzPost'), prev = Store.d.player ? Store.lastTest(Store.d.player, unit, kind) : null;
+    $('#qzBody').innerHTML = `
+      <div class="kicker">${esc(uName(unit))} · ${esc(title)}</div>
+      <h2 class="qz-title">${esc(T(kind==='pre' ? 'qzTitlePre' : 'qzTitlePost'))}</h2>
+      <p class="qz-desc">${esc(T('qzDesc', QUIZ_N))}</p><p class="qz-desc">${esc(T('qzWhy'))}</p>
+      ${prev ? `<p class="muted" style="margin-top:10px">${esc(T('qzLast', prev.pct))}</p>` : ''}
+      <div class="row">
+        <label class="field" id="qzField">${ic('user')}<input id="qzName" maxlength="40" placeholder="${esc(T('qzName'))}" aria-label="${esc(T('qzName'))}"></label>
+        <button class="btn" id="qzGo">${ic('play')}<span>${esc(T('qzStart'))}</span></button>
+        <button class="btn ghost" id="qzBack">${ic('arrow-l')}<span>${esc(T('back'))}</span></button>
+      </div><p class="svneed" id="qzNeed"></p>`;
+    const inp = $('#qzName'), field = $('#qzField');
+    inp.value = Store.d.player || '';
+    inp.oninput = () => { field.classList.remove('need'); $('#qzNeed').textContent = ''; };
+    const go = () => {
+      const name = inp.value.trim().slice(0, 40);
+      if(!name){ field.classList.remove('need'); void field.offsetWidth; field.classList.add('need'); $('#qzNeed').textContent = T('qzNeedName'); inp.focus(); return; }
+      Store.d.player = name; Store.save(); $('#playerName').value = name;
+      this.qz = { unit, kind, qs:makeQuiz(unit, kind), i:0, answers:[] };
+      this.quizQ();
+    };
+    inp.onkeydown = e => { if(e.key==='Enter') go(); };
+    $('#qzGo').onclick = () => { audio(); go(); };
+    $('#qzBack').onclick = () => this.menu();
+    this.show('quiz');
+  },
+  quizQ(){
+    const q = this.qz, x = q.qs[q.i];
+    $('#qzBody').innerHTML = `
+      <div class="qz-top"><span class="kicker">${esc(T(q.kind==='pre' ? 'qzPre' : 'qzPost'))}</span><span class="label">${esc(T('qzQ', q.i+1, q.qs.length))}</span></div>
+      <div class="meter qzbar"><i style="width:${q.i/q.qs.length*100}%"></i></div>
+      <p class="qz-ask">${esc(T('qzAsk'))}</p>
+      <div class="qz-sent">${markedHTML(x.text, 'hl')}</div>
+      <div class="qz-btns"><button class="btn qz-ok" data-a="1">${ic('check')}<span>${esc(T('qzRight'))}</span></button>
+        <button class="btn qz-bad" data-a="0">${ic('x')}<span>${esc(T('qzWrong'))}</span></button></div>`;
+    $('#qzBody').querySelectorAll('.qz-btns button').forEach(b => b.onclick = () => {
+      q.answers.push(b.dataset.a==='1'); q.i++;
+      SFX.tile(q.i % 8);
+      if(q.i < q.qs.length) this.quizQ(); else this.quizEnd();
+    });
+  },
+  quizEnd(){
+    const q = this.qz, name = Store.d.player, total = q.qs.length;
+    const missed = q.qs.filter((x,k) => q.answers[k] !== !x.wrong), right = total - missed.length, pct = Math.round(right/total*100);
+    Store.addTest({ name, unit:q.unit, kind:q.kind, correct:right, total, pct, date:new Date().toISOString() });
+    missed.forEach(x => Store.nbMistake(parseMarked(x.e.t).plain, x.e.w, x.li));     // mistakes go to the notebook for practice
+    Store.save();
+    const pre = q.kind==='post' ? Store.lastTest(name, q.unit, 'pre') : null, gain = pre ? pct - pre.pct : null;
+    const col = pct>=80 ? 'var(--ok)' : pct>=50 ? 'var(--warn)' : 'var(--bad)';
+    const msg = gain==null ? (q.kind==='pre' ? T('qzPreNext') : '') : gain>0 ? T('qzGainUp', gain) : gain<0 ? T('qzGainDown', -gain) : T('qzGainSame');
+    const said = x => T('qzYouSaid', T(x.wrong ? 'qzRight' : 'qzWrong'));
+    $('#qzBody').innerHTML = `
+      <div class="kicker">${esc(uName(q.unit))} · ${esc(T(q.kind==='pre' ? 'qzPre' : 'qzPost'))}</div>
+      <h2 class="qz-title">${esc(T('qzDone'))}</h2>
+      <div class="qz-score" style="--c:${col}">${pct}%</div><p class="muted">${esc(T('qzScore', right, total))}</p>
+      ${pre ? `<div class="qz-cmp${gain>0 ? ' up' : ''}">${ic(gain>0 ? 'trophy' : 'chart')}<span>${esc(T('qzCompare', pre.pct, pct))}</span></div>` : ''}
+      ${msg ? `<p class="qz-desc">${esc(msg)}</p>` : ''}
+      <div class="sec">${ic('bulb')}${esc(T('qzReview'))}</div>
+      ${missed.length ? `<ul class="list">${missed.map(x => answerCard({ w:x.e.w, r:x.e.t, pos:x.e.pos || LEVELS[x.li].pos }, x.wrong ? 'bad' : 'ok',
+          `<div class="meta"><span>${esc(said(x))}</span></div>`)).join('')}</ul>` : `<p class="muted">${esc(T('qzAllRight'))}</p>`}
+      <div class="row" id="qzBtns"></div>`;
+    sayButtons($('#qzBody'));
+    const btns = $('#qzBtns'), mk = (label, cls, icon, fn) => { const b = document.createElement('button'); b.className = 'btn' + (cls ? ' '+cls : '');
+      b.innerHTML = `${ic(icon)}<span>${esc(label)}</span>`; b.onclick = fn; btns.appendChild(b); };
+    if(q.kind==='pre') mk(T('qzPlay'), '', 'play', () => this.briefing(unitLevels(q.unit)[0]));
+    else mk(T('tabStats'), '', 'chart', () => { this.tab = 'stats'; this.menu(); });
+    mk(T('menu'), 'ghost', 'home', () => this.menu());
+    (pct >= 80 ? SFX.win : SFX.good)();
   },
 
   /* ---------- guide tab: the 8 parts of speech ---------- */
@@ -562,6 +666,7 @@ const UI = {
       mk(T('tabBoard'), 'ghost', 'trophy', () => { this.tab = 'board'; this.menu(); });
     } else if(s.mode==='level'){
       if(s.win && nextInUnit(s.idx) >= 0) mk(T('next'), '', 'arrow-r', () => this.briefing(nextInUnit(s.idx)));
+      if(s.win && nextInUnit(s.idx) < 0) mk(T('qzPost'), '', 'check', () => this.quiz(LEVELS[s.idx].unit, 'post'));
       mk(s.win ? T('replay') : T('retry'), s.win ? 'ghost' : '', 'replay', () => startLevel(s.idx));
     } else mk(T('retry'), 'ghost', 'replay', () => { if(!startReview()) this.menu(); });
     mk(T('menu'), 'ghost', 'home', () => this.menu());
@@ -610,6 +715,7 @@ const UI = {
           ${me ? kpi('stTotal', fmtNum(me.score)) + kpi('stSvBest', me.sv ? fmtNum(me.sv) : '–')
                : kpi('stStars', Object.values(Store.d.stars).reduce((a,b) => a+b, 0)+' / '+LEVELS.length*3) + kpi('stMastered', Store.d.mastered)}</div>
         <div class="sec">${ic('chart')}${esc(T('stByLevel'))}${me ? ` · ${esc(me.name)}` : ''}</div>${levelTable(levelRows(S), !me)}
+        ${testsHTML(pk)}
         <div class="sec">${ic('user')}${esc(T('stPlayersN'))}</div><p class="sec-hint">${esc(T('stPick'))}</p>${playerTable(players, pk)}`;
     }
     el.innerHTML = h;

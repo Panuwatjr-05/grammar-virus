@@ -8,7 +8,7 @@ const cmpRun = (a,b) => b.score-a.score || b.wave-a.wave || b.time-a.time || (a.
 const Store = {
   d:null,
   defaults(){
-    return { v:2, unlocked:1, stars:{}, best:{}, player:'', mastered:0, notebook:{}, sessions:[], board:[],
+    return { v:2, unlocked:1, stars:{}, best:{}, player:'', mastered:0, notebook:{}, sessions:[], board:[], tests:[],
              settings:{ lang:'en', voice:true, speed:1, speak:true } };
   },
   load(){
@@ -20,6 +20,7 @@ const Store = {
       try{ const old = JSON.parse(localStorage.getItem('grammarVirusSave')); if(old){ d.player = old.player||''; d.settings = Object.assign(d.settings, old.settings||{}); } }catch(e){}
     }
     if(!Array.isArray(d.board)) d.board = [];
+    if(!Array.isArray(d.tests)) d.tests = [];
     this.d = d;
   },
   save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(this.d)); }catch(e){} },
@@ -69,6 +70,14 @@ const Store = {
   },
   clearBoard(){ this.d.board = []; this.save(); },
 
+  /* ---- pre-test / post-test: { name, unit, kind:'pre'|'post', correct, total, pct, date } ---- */
+  addTest(t){ this.d.tests.push(t); if(this.d.tests.length > 500) this.d.tests.shift(); this.save(); },
+  // the player's most recent test of this kind in this lesson
+  lastTest(name, unit, kind){
+    const k = this.nameKey(name);
+    return this.d.tests.filter(t => this.nameKey(t.name)===k && t.unit===unit && t.kind===kind).sort((a,b) => a.date < b.date ? 1 : -1)[0] || null;
+  },
+
   /* ---- playtest logs ---- */
   logSession(s){ this.d.sessions.push(s); if(this.d.sessions.length>500) this.d.sessions.shift(); this.save(); },
   updateLast(patch){ const s = this.d.sessions[this.d.sessions.length-1]; if(s) Object.assign(s, patch); this.save(); },
@@ -77,7 +86,8 @@ const Store = {
                   'kills','rescued','survivorsShot','wrongCures','lostSurvivors','bitten','bossErrors','avgDecisionSec','bestCombo',
                   'speakScore','speed','durationSec','fun','difficulty'];
     const cell = v => { const s = v==null ? '' : String(v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
-    const rows = [cols.join(',')].concat(this.d.sessions.map(s => cols.map(c=>cell(s[c])).join(',')));
+    const tests = this.d.tests.map(t => ({ time:t.date, player:t.name, mode:t.kind+'test', level:t.unit, accuracy:t.pct, decisions:t.total, correct:t.correct }));
+    const rows = [cols.join(',')].concat(this.d.sessions.concat(tests).map(s => cols.map(c=>cell(s[c])).join(',')));
     const blob = new Blob(['﻿'+rows.join('\n')], { type:'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
