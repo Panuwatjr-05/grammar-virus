@@ -88,7 +88,7 @@ if(location.hash.startsWith('#demo-')){
         frames(200);
       }
       // survival + leaderboard (with the sample leaderboard above)
-      if(mode==='menu'){ DEMO_BOARD(); UI.tab = 'play'; UI.renderMenu(); }
+      if(mode==='menu'){ DEMO_BOARD(); UI.tab = 'play'; if(lvNum) UI.unit = UNITS[+lvNum-1].key; UI.renderMenu(); }   // #demo-menu2 = Tenses lesson
       if(mode==='board'){ DEMO_BOARD(); UI.tab = 'board'; UI.renderMenu(); }
       if(mode==='stats'){                                    // #demo-stats2 = only the 2nd sample player's data
         DEMO_SESSIONS(); UI.statsPlayer = lvNum ? Store.nameKey(DEMO_PLAYERS[+lvNum-1]) : null; UI.tab = 'stats'; UI.renderMenu();
@@ -165,9 +165,12 @@ if(location.hash === '#selftest'){
       const orphans = Object.keys(ANSWERS).filter(k => !SENTENCE_INDEX.has(k));
       ok(!unexplained.length && !orphans.length, `answer key: ${SENTENCE_INDEX.size - unexplained.length}/${SENTENCE_INDEX.size} sentences have a translation + explanation`
          + (unexplained.length ? ' · missing: ' + unexplained.join(' | ') : '') + (orphans.length ? ' · no such sentence: ' + orphans.join(' | ') : ''));
-      const last = LEVELS[LEVELS.length-1];
+      const last = LEVELS[unitLevels('pos').pop()], tl = unitLevels('tense').map(i => LEVELS[i]);
+      ok(tl.length === 8 && tl.filter(L => L.pos).map(L => L.pos).join() === TENSE_ORDER.join(),
+         `lesson 2 (Tenses): ${tl.length} levels, one per tense + time words, then a mixed final`);
+      ok(LEVELS[unitLevels('tense').pop()].boss.every(b => b.stages.length >= 3), 'Tenses final boss sentences mix several tenses');
       ok(last.boss.every(b => POS_ORDER.every(p => b.stages.some(s => s.pos===p))), 'final boss sentences contain all 8 parts of speech');
-      ok(LEVELS.filter(L => L.pos).map(L => L.pos).join() === POS_ORDER.join(), 'levels 1–8 cover the 8 parts of speech in order');
+      ok(LEVELS.filter(L => L.unit==='pos' && L.pos).map(L => L.pos).join() === POS_ORDER.join(), 'levels 1–8 cover the 8 parts of speech in order');
       ok(markedHTML('She sings [beautifully].','ok').includes('<mark class="ok">beautifully</mark>'), 'highlight markup renders');
       ok(parseMarked('[Both] Tom [and] Anna are here.').key === 'Both … and', 'split highlights join as "Both … and"');
       ok(matchScore('i was born in 2008', 'I was born in 2008.') === 1 && matchScore('she has lived here for 10 years','She has lived here for ten years.') === 1, 'speech match handles numbers');
@@ -292,7 +295,7 @@ if(location.hash === '#selftest'){
       ok(document.querySelectorAll('#rBody .bwd:not(.plain)').length === B.total, 'result shows the boss sentence colour-coded');
       ok(document.querySelectorAll('#rBody li.ans .why').length === G.fixed.length + G.rescued.length && document.querySelectorAll('#rBody .bjob').length > 0,
          `debrief explains all ${G.fixed.length + G.rescued.length} sentences and what each boss word does`);
-      ok(Store.d.unlocked >= 2 && (Store.d.stars[0] || 0) >= 1, `level 2 unlocked, stars=${Store.d.stars[0]}`);
+      ok(isUnlocked(1) && (Store.d.stars[0] || 0) >= 1, `level 2 unlocked, stars=${Store.d.stars[0]}`);
       const ls = Store.d.sessions[Store.d.sessions.length - 1];
       ok(ls && ls.result === 'win', `session logged (accuracy ${ls && ls.accuracy}%)`);
       const funBtn = document.querySelector('.seg[data-q="fun"] button');
@@ -306,6 +309,16 @@ if(location.hash === '#selftest'){
       const FB = G.boss;
       runUntil(() => G.phase !== 'boss', 2000, TEST_SOLVE);
       ok(G.phase === 'bossDead' && new Set(G.bossWords.filter(b => b.pos).map(b => b.pos)).size === 8, `final boss: ${FB.stages.length} stages cleared, ${FB.total} words found`);
+
+      /* ---- 3b. Tenses lesson: level 1 with a perfect player, its boss asks for time words + tense verbs ---- */
+      const T1 = unitLevels('tense')[0];
+      ok(isUnlocked(T1) && !isUnlocked(unitLevels('tense')[1]), 'Tenses level 1 is open from the start, level 2 opens after it');
+      startLevel(T1);
+      runUntil(() => G.phase === 'boss' || G.phase === 'over', 20000, TEST_SHOOT(14));
+      ok(G.phase === 'boss' && G.boss.stages.some(st => st.pos==='timeWord'), `Tenses level 1 cleared → boss "${G.boss && G.boss.entry.t}"`);
+      runUntil(() => G.phase !== 'boss', 600, TEST_SOLVE);
+      ok(G.phase === 'bossDead' && G.bossWords.some(b => b.pos==='presentSimple') && G.bossWords.some(b => b.pos==='timeWord'),
+         'Tenses boss defeated: time words and present simple verbs found');
 
       /* ---- 4. lose run: level 2, player never shoots ---- */
       startLevel(1);
@@ -348,7 +361,14 @@ if(location.hash === '#selftest'){
       UI.menu();
       ['board', 'guide', 'notebook', 'stats', 'settings', 'play'].forEach(tab => { UI.tab = tab; UI.renderMenu(); });
       ok(document.querySelectorAll('#guideBody .gcard').length === 8, 'guide shows the 8 parts of speech');
-      ok(document.querySelectorAll('#levels .lvl').length === LEVELS.length, `level grid renders ${LEVELS.length} levels`);
+      UI.unit = 'pos'; UI.renderMenu();
+      ok(document.querySelectorAll('#levels .lvl').length === unitLevels('pos').length, `level grid renders the ${unitLevels('pos').length} Parts of Speech levels`);
+      document.querySelector('#unitSeg button[data-u="tense"]').click();
+      ok(document.querySelectorAll('#levels .lvl').length === 8 && document.querySelector('#levels .lvl .lvl-name').textContent === 'Present Simple',
+         'lesson switch shows the 8 Tenses levels');
+      UI.tab = 'guide'; UI.guideUnit = 'tense'; UI.renderMenu();
+      ok(document.querySelectorAll('#guideBody .gcard').length === 7, 'guide has a Tenses tab (6 tenses + time words)');
+      UI.guideUnit = 'pos'; UI.unit = 'pos'; UI.tab = 'play'; UI.renderMenu();
       Store.d.settings.lang = 'th'; UI.applyLang();
       ok(document.querySelector('[data-i18n="tabPlay"]').textContent === 'เล่น', 'Thai language applies');
       const thGaps = [];

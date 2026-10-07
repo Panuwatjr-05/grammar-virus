@@ -13,8 +13,20 @@ const POS = {
   preposition:  { en:'preposition',  pl:'prepositions',  th:'คำบุพบท',         color:'#ffe066' },
   conjunction:  { en:'conjunction',  pl:'conjunctions',  th:'คำสันธาน',        color:'#ff8cc6' },
   interjection: { en:'interjection', pl:'interjections', th:'คำอุทาน',         color:'#4fd1ff' },
+  // Unit 2: the tense of the highlighted verb (one = with its article, for "… is a past simple verb")
+  presentSimple:  { en:'present simple',     pl:'present simple verbs',     one:'a present simple verb',     th:'ปัจจุบันธรรมดา',  color:'#5ab8ff' },
+  presentCont:    { en:'present continuous', pl:'present continuous verbs', one:'a present continuous verb', th:'ปัจจุบันกำลังทำ', color:'#3fe0c5' },
+  pastSimple:     { en:'past simple',        pl:'past simple verbs',        one:'a past simple verb',        th:'อดีตธรรมดา',     color:'#ff7f6a' },
+  pastCont:       { en:'past continuous',    pl:'past continuous verbs',    one:'a past continuous verb',    th:'อดีตกำลังทำ',    color:'#ffa94d' },
+  presentPerfect: { en:'present perfect',    pl:'present perfect verbs',    one:'a present perfect verb',    th:'ปัจจุบันสมบูรณ์', color:'#c58bff' },
+  future:         { en:'future',             pl:'future verbs',             one:'a future verb',             th:'อนาคต',          color:'#9be15d' },
+  timeWord:       { en:'time word',          pl:'time words',                                                th:'คำบอกเวลา',      color:'#ffd84d' },
 };
 const POS_ORDER = ['noun','pronoun','verb','adjective','adverb','preposition','conjunction','interjection'];
+const TENSE_ORDER = ['presentSimple','presentCont','pastSimple','pastCont','presentPerfect','future','timeWord'];
+const CAT_ORDER = POS_ORDER.concat(TENSE_ORDER);
+// lessons: each level has unit 'pos' (Parts of Speech, the default) or 'tense'
+const UNITS = [ { key:'pos', en:'Parts of Speech', th:'ชนิดของคำ' }, { key:'tense', en:'Tenses', th:'กาลของกริยา' } ];
 // the job each part of speech does in a sentence (used to explain the boss sentence)
 const POS_JOB = {
   noun:         { en:'names a person, place, thing or idea', th:'เรียกชื่อคน สถานที่ สิ่งของ หรือความคิด' },
@@ -25,12 +37,19 @@ const POS_JOB = {
   preposition:  { en:'shows place or time before a noun',    th:'บอกสถานที่หรือเวลา วางหน้าคำนาม' },
   conjunction:  { en:'joins words or ideas',                 th:'เชื่อมคำหรือความคิด' },
   interjection: { en:'shows a sudden feeling',               th:'แสดงความรู้สึกฉับพลัน' },
+  presentSimple:  { en:'habits and facts: every day, always',            th:'นิสัยและความจริงทั่วไป: ทุกวัน, เสมอ' },
+  presentCont:    { en:'happening right now: am / is / are + -ing',      th:'กำลังเกิดขึ้นตอนนี้: am / is / are + -ing' },
+  pastSimple:     { en:'finished in the past: verb 2',                   th:'จบไปแล้วในอดีต: กริยาช่อง 2' },
+  pastCont:       { en:'in progress at a past time: was / were + -ing',  th:'กำลังทำอยู่ ณ เวลาหนึ่งในอดีต: was / were + -ing' },
+  presentPerfect: { en:'from the past until now: have / has + verb 3',   th:'จากอดีตจนถึงตอนนี้: have / has + กริยาช่อง 3' },
+  future:         { en:'later: will / be going to + verb',               th:'อนาคต: will / be going to + กริยา' },
+  timeWord:       { en:'tells when, so it shows which tense to use',     th:'บอกเวลา จึงบอกว่าต้องใช้ tense ไหน' },
 };
 
 const STR = {
   en:{
-    subtitle:'Parts of Speech Zombie Shooter', menuKicker:'Outbreak alert · Parts of Speech',
-    tagline:'A virus is twisting words into the wrong part of speech. Kill the zombies that speak broken sentences and rescue the survivors who still speak correctly.',
+    subtitle:'Grammar Zombie Shooter', menuKicker:'Outbreak alert · Parts of Speech & Tenses',
+    tagline:'A virus is twisting English grammar: words turn into the wrong part of speech and verbs into the wrong tense. Kill the zombies that speak broken sentences and rescue the survivors who still speak correctly.',
     tabPlay:'Play', tabGuide:'Guide', tabNotebook:'Notebook', tabStats:'Stats', tabSettings:'Settings',
     playerLabel:'Player name', playerPh:'Player name (saved in playtest data)', howTo:'How to play',
     r1t:'Left click: kill', r1:'Highlighted word used wrongly? Fire the left rifle (kill round) at the broken sentence.',
@@ -63,7 +82,7 @@ const STR = {
     speakRetry:'Not quite. Try again!', noSpeech:'Speech recognition isn\'t supported in this browser (try Chrome or Edge). Read it aloud anyway.',
     micError:'Microphone problem: {0}',
     kWin:'Mission complete', kLose:'Mission failed', kReview:'Review complete',
-    winTitle:'Level {0} cleared', winAll:'All levels cleared. You are a Grammar Ranger!', winReview:'Notebook review done',
+    winTitle:'Level {0} cleared', winAll:'All levels cleared. You are a Grammar Ranger!', winAllTense:'All tense levels cleared. You are a Time Ranger!', winReview:'Notebook review done',
     loseTitle:'You were overrun',
     sScore:'Score', sAcc:'Accuracy', sDec:'Avg decision', sCombo:'Best combo', sSpeak:'Speaking', sMastered:'Mastered',
     secBitten:'Broken sentences that reached you', secSurvivor:'Survivors you shot (these were correct)',
@@ -79,6 +98,8 @@ const STR = {
     funLow:'Not fun', funHigh:'Very fun', easy:'Too easy', right:'Just right', hard:'Too hard', thanks:'Thanks for your feedback!',
     next:'Next level', replay:'Replay', retry:'Try again', menu:'Menu',
     guideTitle:'Parts of Speech guide', guideDesc:'Every word in a sentence has a job. These are the 8 parts of speech.',
+    guideTitleTense:'Tenses guide', guideDescTense:'The verb tells WHEN something happens. These are the tenses in this game, and the time words that point to them.',
+    unitLbl:'Lesson',
     guideForms:'Word-form clues',
     nbTitle:'Mistake notebook', nbDesc:'Every sentence you get wrong is saved here. Handle it correctly twice in a row to master it.',
     nbEmpty:'No mistakes yet. Go play!', nbNeed:'You need at least 3 sentences to start a review.',
@@ -95,12 +116,12 @@ const STR = {
     slow:'Relaxed', normal:'Normal', fast:'Hard', setSpeak:'Speaking bonus after boss', on:'On', off:'Off',
     paused:'Paused', resume:'Resume', quit:'Quit to menu', pauseTip:'Left click = kill · Right click or Shift+click = rescue · SPACE = Slow-Mo · Esc = pause',
     // survival mode + leaderboard
-    tabBoard:'Leaderboard', svKicker:'Survival mode', svTitle:'All parts of speech', svPlay:'Play Survival',
-    svDesc:'All 8 parts of speech, mixed. The waves never stop and get faster until your HP runs out. Score as much as you can and climb the leaderboard.',
+    tabBoard:'Leaderboard', svKicker:'Survival mode', svTitle:'All lessons mixed', svPlay:'Play Survival',
+    svDesc:'All 8 parts of speech and every tense, mixed. The waves never stop and get faster until your HP runs out. Score as much as you can and climb the leaderboard.',
     svTop:'Players to beat', svNoRecord:'No records yet. Be the first!',
-    svBriefKicker:'Survival mode · Briefing', svQ:'How long can you survive?', svRef:'Quick reference: what each part of speech does',
+    svBriefKicker:'Survival mode · Briefing', svQ:'How long can you survive?', svRef:'Quick reference: what each part of speech and tense does',
     svRulesLbl:'Survival rules',
-    svRule1:'Every part of speech is mixed together, from nouns to interjections, plus word forms.',
+    svRule1:'Every lesson is mixed together: the 8 parts of speech, word forms and all the tenses.',
     svRule2:'The waves never end. Each new wave is faster and sends more zombies at once.',
     svRule3:'Every 3rd wave ends with a boss. Beat it to heal 20 HP.',
     svRule4:'Clear a wave for bonus points, doubled if you made no mistakes in it.',
@@ -137,8 +158,8 @@ const STR = {
     tapHint:'Target locked. Press KILL or RESCUE',
   },
   th:{
-    subtitle:'เกมยิงซอมบี้ฝึกชนิดของคำ', menuKicker:'แจ้งเตือนการระบาด · Parts of Speech',
-    tagline:'ไวรัสทำให้คำกลายเป็นชนิดที่ผิด ยิงทำลายซอมบี้ที่พูดประโยคผิด และยิงยารักษาผู้รอดชีวิตที่ยังพูดถูกต้อง',
+    subtitle:'เกมยิงซอมบี้ฝึกไวยากรณ์อังกฤษ', menuKicker:'แจ้งเตือนการระบาด · Parts of Speech & Tenses',
+    tagline:'ไวรัสทำให้ไวยากรณ์เพี้ยน คำกลายเป็นชนิดที่ผิด กริยากลายเป็น tense ที่ผิด ยิงทำลายซอมบี้ที่พูดประโยคผิด และยิงยารักษาผู้รอดชีวิตที่ยังพูดถูกต้อง',
     tabPlay:'เล่น', tabGuide:'คู่มือ', tabNotebook:'สมุดคำผิด', tabStats:'สถิติ', tabSettings:'ตั้งค่า',
     playerLabel:'ชื่อผู้เล่น', playerPh:'ชื่อผู้เล่น (บันทึกในข้อมูล playtest)', howTo:'วิธีเล่น',
     r1t:'คลิกซ้าย: ยิงทำลาย', r1:'คำที่ไฮไลต์ใช้ผิด? ใช้ปืนซ้ายยิงกระสุนทำลายใส่ประโยคที่ผิด',
@@ -171,7 +192,7 @@ const STR = {
     speakRetry:'ยังไม่ค่อยตรง ลองอีกครั้ง', noSpeech:'เบราว์เซอร์นี้ไม่รองรับการฟังเสียง (ลอง Chrome หรือ Edge) แต่ลองอ่านออกเสียงดูนะ',
     micError:'ไมโครโฟนมีปัญหา: {0}',
     kWin:'ภารกิจสำเร็จ', kLose:'ภารกิจล้มเหลว', kReview:'ทบทวนเสร็จสิ้น',
-    winTitle:'ผ่านด่าน {0} แล้ว', winAll:'ผ่านครบทุกด่าน คุณคือ Grammar Ranger!', winReview:'ทบทวนสมุดคำผิดเสร็จแล้ว',
+    winTitle:'ผ่านด่าน {0} แล้ว', winAll:'ผ่านครบทุกด่าน คุณคือ Grammar Ranger!', winAllTense:'ผ่านบท Tenses ครบทุกด่าน คุณคือ Time Ranger!', winReview:'ทบทวนสมุดคำผิดเสร็จแล้ว',
     loseTitle:'คุณถูกซอมบี้รุมกิน',
     sScore:'คะแนน', sAcc:'ความแม่นยำ', sDec:'เวลาตัดสินใจเฉลี่ย', sCombo:'คอมโบสูงสุด', sSpeak:'การพูด', sMastered:'จำได้แล้ว',
     secBitten:'ประโยคผิดที่ปล่อยให้เข้ามากัด', secSurvivor:'ยิงผู้รอดชีวิต (ประโยคเหล่านี้ถูกอยู่แล้ว)',
@@ -187,6 +208,8 @@ const STR = {
     funLow:'ไม่สนุก', funHigh:'สนุกมาก', easy:'ง่ายไป', right:'กำลังดี', hard:'ยากไป', thanks:'ขอบคุณสำหรับความคิดเห็น!',
     next:'ด่านถัดไป', replay:'เล่นอีกครั้ง', retry:'ลองใหม่', menu:'เมนู',
     guideTitle:'คู่มือชนิดของคำ', guideDesc:'ทุกคำในประโยคมีหน้าที่ของมัน นี่คือชนิดของคำทั้ง 8 ชนิด',
+    guideTitleTense:'คู่มือ Tenses', guideDescTense:'กริยาบอกว่าเรื่องเกิดขึ้น "เมื่อไร" นี่คือ tense ทั้งหมดในเกมนี้ และคำบอกเวลาที่ช่วยบอกว่าต้องใช้ tense ไหน',
+    unitLbl:'บทเรียน',
     guideForms:'สังเกตชนิดของคำจากคำลงท้าย',
     nbTitle:'สมุดจดคำผิด', nbDesc:'ประโยคที่คุณตอบผิดจะถูกเก็บไว้ที่นี่ ตอบถูก 2 ครั้งติดกันจึงจะนับว่าจำได้',
     nbEmpty:'ยังไม่มีคำผิด ไปเล่นกันเลย!', nbNeed:'ต้องมีอย่างน้อย 3 ประโยคจึงจะเริ่มทบทวนได้',
@@ -203,12 +226,12 @@ const STR = {
     slow:'ช้า', normal:'ปกติ', fast:'ยาก', setSpeak:'โบนัสการพูดหลังบอส', on:'เปิด', off:'ปิด',
     paused:'หยุดชั่วคราว', resume:'เล่นต่อ', quit:'กลับเมนู', pauseTip:'คลิกซ้าย = ยิงทำลาย · คลิกขวาหรือ Shift+คลิก = รักษา · SPACE = Slow-Mo · Esc = หยุดเกม',
     // โหมดเอาชีวิตรอด + ตารางอันดับ
-    tabBoard:'อันดับ', svKicker:'โหมดเอาชีวิตรอด', svTitle:'รวมทุกชนิดของคำ', svPlay:'เล่นโหมดเอาชีวิตรอด',
-    svDesc:'รวมคำทั้ง 8 ชนิดไว้ด้วยกัน ซอมบี้มาเป็นระลอกไม่รู้จบและเร็วขึ้นเรื่อย ๆ จนกว่าเลือดจะหมด เก็บคะแนนให้ได้มากที่สุดแล้วไต่อันดับ',
+    tabBoard:'อันดับ', svKicker:'โหมดเอาชีวิตรอด', svTitle:'รวมทุกบทเรียน', svPlay:'เล่นโหมดเอาชีวิตรอด',
+    svDesc:'รวมคำทั้ง 8 ชนิดและ tense ทุกแบบไว้ด้วยกัน ซอมบี้มาเป็นระลอกไม่รู้จบและเร็วขึ้นเรื่อย ๆ จนกว่าเลือดจะหมด เก็บคะแนนให้ได้มากที่สุดแล้วไต่อันดับ',
     svTop:'ผู้เล่นที่ต้องเอาชนะ', svNoRecord:'ยังไม่มีสถิติ มาเป็นคนแรกเลย!',
-    svBriefKicker:'โหมดเอาชีวิตรอด · บรีฟ', svQ:'คุณจะรอดได้นานแค่ไหน?', svRef:'สรุปย่อ: คำแต่ละชนิดทำหน้าที่อะไร',
+    svBriefKicker:'โหมดเอาชีวิตรอด · บรีฟ', svQ:'คุณจะรอดได้นานแค่ไหน?', svRef:'สรุปย่อ: คำแต่ละชนิดและแต่ละ tense ทำหน้าที่อะไร',
     svRulesLbl:'กติกาโหมดเอาชีวิตรอด',
-    svRule1:'รวมคำทุกชนิดไว้ด้วยกัน ตั้งแต่คำนามถึงคำอุทาน รวมถึงการเปลี่ยนรูปคำ',
+    svRule1:'รวมทุกบทเรียนไว้ด้วยกัน ทั้งชนิดของคำ 8 ชนิด การเปลี่ยนรูปคำ และ tense ทุกแบบ',
     svRule2:'ซอมบี้มาเป็นระลอกไม่มีวันจบ ระลอกใหม่จะเร็วขึ้นและมาพร้อมกันมากขึ้น',
     svRule3:'ทุก 3 ระลอกจะมีบอส ชนะบอสได้เลือดคืน 20 HP',
     svRule4:'ผ่านแต่ละระลอกได้คะแนนโบนัส ถ้าไม่พลาดเลยได้โบนัส 2 เท่า',
@@ -264,6 +287,8 @@ function posName(p, plural=false){
 }
 // with an English article: "an adverb", "a noun" (Thai needs none)
 function posA(p){
+  const m = POS[p];
+  if(m && m.one && !(Store.d && Store.d.settings.lang==='th')) return m.one;     // "a past simple verb"
   const n = posName(p);
   return /^[a-z]/.test(n) ? (/^[aeiou]/.test(n) ? 'an ' : 'a ') + n : n;
 }

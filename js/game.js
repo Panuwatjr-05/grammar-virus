@@ -15,6 +15,13 @@ const SHIRTS = ['#4a5d8a','#8a4a4a','#5f7a4a','#7a6a4a','#5a4a7a','#3f6f75','#8a
 const SENTENCE_INDEX = new Map();   // correct sentence (plain text) -> { e: item data, li: level index }
 LEVELS.forEach((L,li) => L.items.forEach(e => SENTENCE_INDEX.set(parseMarked(e.t).plain, { e, li })));
 const levelOf = text => (SENTENCE_INDEX.get(text) || { li:-1 }).li;
+// lessons: every level belongs to a unit ('pos' unless it says otherwise) and is numbered inside it
+LEVELS.forEach(L => { L.unit = L.unit || 'pos'; });
+const unitLevels = u => LEVELS.map((_,i) => i).filter(i => LEVELS[i].unit===u);
+const lvNo = i => unitLevels(LEVELS[i].unit).indexOf(i) + 1;
+const nextInUnit = i => { const l = unitLevels(LEVELS[i].unit); return l[l.indexOf(i)+1] ?? -1; };
+// the first level of each lesson is open; the next one opens once the one before it is cleared
+const isUnlocked = i => { const l = unitLevels(LEVELS[i].unit), k = l.indexOf(i); return k===0 || (Store.d.stars[l[k-1]] || 0) > 0; };
 const speakBonus = score => score>=80 ? 300 : score>=50 ? 100 : 0;
 let zid = 0;
 
@@ -399,7 +406,6 @@ function endGame(win){
   if(win && G.mode==='level'){
     sd.stars[G.idx] = Math.max(sd.stars[G.idx]||0, stars);
     sd.best[G.idx] = Math.max(sd.best[G.idx]||0, G.score);
-    sd.unlocked = Math.max(sd.unlocked, Math.min(LEVELS.length, G.idx+2));
   }
   // survival: the run goes on the leaderboard under the player's name
   const board = sv ? Store.addRun({ id:Date.now().toString(36) + Math.random().toString(36).slice(2,6), name:sd.player, score:G.score,

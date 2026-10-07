@@ -122,6 +122,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:50;
 .rule p{font-size:13px;line-height:1.45;color:var(--text-2);margin-top:2px}
 .campaign{padding:20px}
 .campaign-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+/* lesson switch above the level grid: Parts of Speech | Tenses */
+.unitseg{display:flex;margin-bottom:12px}
+.unitseg button{flex:1;height:36px}
 .levels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .lvl{--c:var(--acid);position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:14px;align-items:center;
   min-height:72px;padding:12px 14px 15px;text-align:left;border:1px solid var(--line);border-radius:5px;cursor:pointer;overflow:hidden;

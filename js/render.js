@@ -368,7 +368,7 @@ function render(){
     ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
   }
   if(G.hp<=30 && G.phase!=='over'){ ctx.fillStyle=`rgba(160,0,20,${.1+.07*Math.sin(performance.now()/200)})`; ctx.fillRect(0,0,W,H); }
-  const nn = String(G.idx+1).padStart(2,'0');
+  const nn = G.idx >= 0 ? String(lvNo(G.idx)).padStart(2,'0') : '';
   if(G.phase==='intro'){
     // survival sets its own banner for every wave ("Wave 3 cleared · +600 bonus" / "WAVE 4")
     if(G.banner) drawBanner(G.banner.kicker, G.banner.title, G.banner.sub || TT('go'), C.warn, false);

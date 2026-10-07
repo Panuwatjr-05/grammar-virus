@@ -74,7 +74,7 @@ function bossWordHTML(b){
 function bossHTML(s){
   const byPos = {};
   s.bossWords.forEach(b => { if(b.pos) (byPos[b.pos] = byPos[b.pos] || []).push(b.w.replace(/[.,!?]+$/,'')); });
-  const jobs = POS_ORDER.filter(p => byPos[p]).map(p => `<div class="bjob" style="--c:${POS[p].color}">
+  const jobs = CAT_ORDER.filter(p => byPos[p]).map(p => `<div class="bjob" style="--c:${POS[p].color}">
       <span class="bjw">${esc(byPos[p].join(' · '))}</span>${ic('arrow-r')}
       <span><b>${esc(posName(p))}</b> ${esc(POS_JOB[p].en)}${isTH() ? `<span class="thx"> · ${thHTML(POS_JOB[p].th)}</span>` : ''}</span></div>`).join('');
   return `<div class="bossbox"><div class="bossline">${s.bossWords.map(bossWordHTML).join('')}${sayBtn(s.bossText)}</div>
@@ -142,7 +142,7 @@ function levelRows(S){
       acc:accPct(sumOf(list,'correct'), sumOf(list,'decisions')), stars:list.reduce((a,s) => Math.max(a, +s.stars||0), 0) }));
   };
   LEVELS.forEach((L,i) => add(S.filter(s => s.mode==='level' && +s.level===i+1),
-    { tag:pad2(i+1), label:L.topic, sub:L.pos ? POS[L.pos].th : L.th, color:L.pos ? POS[L.pos].color : 'var(--acid)', level:true }));
+    { tag:pad2(lvNo(i)), label:L.topic, sub:L.pos ? POS[L.pos].th : L.th, color:L.pos ? POS[L.pos].color : 'var(--acid)', level:true }));
   add(S.filter(s => s.mode==='survival'), { tag:ic('flame'), label:T('svKicker'), color:'var(--warn)' });
   add(S.filter(s => s.mode==='review'), { tag:ic('notebook'), label:T('review'), color:'var(--acid)' });
   return rows;
@@ -171,8 +171,10 @@ function playerTable(players, sel){
         <td class="num opt">${fmtDur(p.time)}</td><td class="opt dt">${esc(fmtDate(p.last))}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
+const uName = u => { const x = UNITS.find(x => x.key===u); return x ? (isTH() ? x.th : x.en) : ''; };
+
 const UI = {
-  tab:'play', boardView:'players',
+  tab:'play', boardView:'players', unit:'pos', guideUnit:'pos',
   statsPlayer:null,          // stats tab: name key of the player being shown, null = everyone
   init(){
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { this.tab = b.dataset.tab; this.renderMenu(); });
@@ -223,25 +225,28 @@ const UI = {
 
   /* ---------- play tab ---------- */
   renderLevels(){
-    const box = $('#levels'); box.innerHTML = '';
-    const next = Math.min(Store.d.unlocked, LEVELS.length) - 1;
+    // lesson switch: Parts of Speech | Tenses (each lesson unlocks on its own)
+    const u = this.unit, ids = unitLevels(u), seg = $('#unitSeg'), box = $('#levels'); box.innerHTML = '';
+    seg.innerHTML = UNITS.map(x => `<button data-u="${x.key}" class="${x.key===u ? 'on' : ''}">${esc(uName(x.key))}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b => b.onclick = () => { this.unit = b.dataset.u; this.renderLevels(); });
+    const open = ids.filter(isUnlocked), next = open.find(i => !Store.d.stars[i]) ?? open[open.length-1];
     let total = 0;
-    LEVELS.forEach((L,i) => {
-      const st = Store.d.stars[i] || 0, locked = i+1 > Store.d.unlocked;
+    ids.forEach(i => {
+      const L = LEVELS[i], st = Store.d.stars[i] || 0, locked = !isUnlocked(i);
       total += st;
       const b = document.createElement('button');
       b.className = 'lvl' + (i===next && !st ? ' next' : '');
       b.disabled = locked;
       b.style.setProperty('--c', L.pos ? POS[L.pos].color : 'var(--acid)');
-      b.innerHTML = `<span class="lvl-no">${pad2(i+1)}</span>
+      b.innerHTML = `<span class="lvl-no">${pad2(lvNo(i))}</span>
         <span><span class="lvl-name">${esc(L.topic)}</span><span class="lvl-sub">${esc(L.pos ? POS[L.pos].th : L.th)}</span></span>
         ${locked ? `<span class="lvl-lock">${ic('lock')}</span>` : `<span class="lvl-stars">${starsHTML(st)}</span>`}
         <span class="lvl-bar">${L.chips.map(p => `<i style="background:${POS[p].color}"></i>`).join('')}</span>`;
       b.onclick = () => { audio(); this.briefing(i); };
       box.appendChild(b);
     });
-    $('#starsTotal').textContent = T('starsTotal', total, LEVELS.length*3);
-    $('#playBtn span').textContent = T('playLevel', next+1);
+    $('#starsTotal').textContent = T('starsTotal', total, ids.length*3);
+    $('#playBtn span').textContent = T('playLevel', lvNo(next));
     $('#playBtn').onclick = () => { audio(); this.briefing(next); };
     const n = Object.keys(Store.d.notebook).length, rb = $('#reviewBtn');
     rb.querySelector('span').textContent = T('reviewN', n);
@@ -258,21 +263,21 @@ const UI = {
         <button class="btn warn" id="svPlay">${ic('play')}<span>${esc(T('svPlay'))}</span></button>
         <button class="btn ghost" id="svBoard">${ic('trophy')}<span>${esc(T('tabBoard'))}</span></button>
       </div>
-      <span class="lvl-bar">${POS_ORDER.map(p => `<i style="background:${POS[p].color}"></i>`).join('')}</span>`;
+      <span class="lvl-bar">${CAT_ORDER.map(p => `<i style="background:${POS[p].color}"></i>`).join('')}</span>`;
     $('#svPlay').onclick = () => { audio(); this.survivalBrief(); };
     $('#svBoard').onclick = () => { this.tab = 'board'; this.renderMenu(); };
   },
   // survival briefing: what each part of speech does, the rules, who to beat, and the player's name (needed for the leaderboard)
   survivalBrief(newPlayer=false){
     const th = isTH();
-    const ref = POS_ORDER.map(p => `<div class="pref">${posChip(p)}<span class="pj">${esc(POS_JOB[p].en)}${th ? `<small>${thHTML(POS_JOB[p].th)}</small>` : ''}</span></div>`).join('');
+    const ref = CAT_ORDER.map(p => `<div class="pref">${posChip(p)}<span class="pj">${esc(POS_JOB[p].en)}${th ? `<small>${thHTML(POS_JOB[p].th)}</small>` : ''}</span></div>`).join('');
     const rules = ['svRule1','svRule2','svRuleHeal','svRule3','svRule4','svRule5','svRule6']
       .map((k,i) => `<li><span class="rn">${i+1}</span><div><b>${esc(T(k))}</b></div></li>`).join('');
     $('#brBody').innerHTML = `
       <div class="brief-head">
         <div><div class="kicker sv">${esc(T('svBriefKicker'))}</div><h2>${esc(T('svTitle'))}</h2>
           <div class="qline"><span class="qpill warn">${ic('clock')}${esc(T('svQ'))}</span></div></div>
-        <div class="chips">${POS_ORDER.map(p => posChip(p)).join('')}</div>
+        <div class="chips">${CAT_ORDER.map(p => posChip(p)).join('')}</div>
       </div>
       <div class="bcols sv">
         <div class="bsec"><span class="label">${esc(T('svRef'))}</span><div class="prefs">${ref}</div></div>
@@ -313,10 +318,11 @@ const UI = {
   },
   briefing(i){
     const L = LEVELS[i], th = isTH();
+    this.unit = L.unit;
     const boss = L.chips.length===1 ? T('missionBoss', posName(L.chips[0], true)) : T('missionMixed', L.chips.length);
     $('#brBody').innerHTML = `
       <div class="brief-head">
-        <div><div class="kicker">${esc(T('briefKicker', pad2(i+1)))}</div><h2>${esc(L.topic)}</h2>${th ? `<div class="th">${esc(L.th)}</div>` : ''}
+        <div><div class="kicker">${esc(uName(L.unit) + ' · ' + T('briefKicker', pad2(lvNo(i))))}</div><h2>${esc(L.topic)}</h2>${th ? `<div class="th">${esc(L.th)}</div>` : ''}
           <div class="qline">${qPill(L)}</div></div>
         <div class="chips">${L.chips.map(p => posChip(p)).join('')}</div>
       </div>
@@ -348,16 +354,19 @@ const UI = {
 
   /* ---------- guide tab: the 8 parts of speech ---------- */
   renderGuide(){
-    const cards = LEVELS.filter(L => L.pos).map(L => `
+    const u = this.guideUnit;
+    const seg = `<div class="seg" id="guideSeg">${UNITS.map(x => `<button data-u="${x.key}" class="${x.key===u ? 'on' : ''}">${esc(uName(x.key))}</button>`).join('')}</div>`;
+    const cards = unitLevels(u).map(i => LEVELS[i]).filter(L => L.pos).map(L => `
       <div class="gcard" style="--c:${POS[L.pos].color}">
         <div class="gh"><b>${esc(L.topic)}</b><span>${esc(POS[L.pos].th)}</span>${qPill(L)}</div>
         ${defHTML(L)}${groupsHTML(L)}${rulesHTML(L, true)}${cluesHTML(L)}
       </div>`).join('');
-    const wf = LEVELS.find(L => !L.pos && L.chips.length===4);
+    const wf = u==='pos' ? LEVELS.find(L => L.unit==='pos' && !L.pos && L.chips.length===4) : null;
     const el = $('#guideBody');
-    el.innerHTML = pageHead(T('tabGuide'), T('guideTitle'), T('guideDesc')) + `<div class="guide">${cards}</div>
+    el.innerHTML = pageHead(T('tabGuide'), T(u==='tense' ? 'guideTitleTense' : 'guideTitle'), T(u==='tense' ? 'guideDescTense' : 'guideDesc'), seg) + `<div class="guide">${cards}</div>
       ${wf ? `<div class="forms"><div class="label">${esc(T('guideForms'))}</div>${groupsHTML(wf)}${cluesHTML(wf)}</div>` : ''}`;
     sayButtons(el);
+    el.querySelectorAll('#guideSeg button').forEach(b => b.onclick = () => { this.guideUnit = b.dataset.u; this.renderGuide(); });
   },
 
   /* ---------- leaderboard tab: survival rankings, kept on this computer ---------- */
@@ -397,7 +406,7 @@ const UI = {
     const lv = $('#hLevel'), sv = G.mode==='survival';
     lv.style.setProperty('--c', sv ? 'var(--warn)' : G.mode==='level' && G.L.pos ? POS[G.L.pos].color : 'var(--acid)');
     lv.querySelector('span').textContent = G.mode==='review' ? T('hudReview') : sv ? `${T('hudSurvival')} · ${T('svWave', G.wave)}`
-                                         : `${T('hudLevel')} ${pad2(G.idx+1)} · ${G.L.topic}`;
+                                         : `${T('hudLevel')} ${pad2(lvNo(G.idx))} · ${G.L.topic}`;
     // survival: progress to the next heal (every 3 correct answers = +10% HP)
     const pips = $('#hPips');
     pips.innerHTML = sv ? [0,1,2].map(k => `<i class="${k < G.good%3 ? 'on' : ''}"></i>`).join('') + '<small>+10%</small>' : '';
@@ -502,7 +511,7 @@ const UI = {
     const sv = s.mode==='survival', L = s.mode==='level' ? LEVELS[s.idx] : null;
     const kick = sv ? T('svOverKicker') : !s.win ? T('kLose') : s.mode==='review' ? T('kReview') : T('kWin');
     const title = sv ? T('svOverTitle', s.wave) : !s.win ? T('loseTitle') : s.mode==='review' ? T('winReview')
-                : s.idx===LEVELS.length-1 ? T('winAll') : T('winTitle', s.idx+1);
+                : nextInUnit(s.idx) < 0 ? T(LEVELS[s.idx].unit==='tense' ? 'winAllTense' : 'winAll') : T('winTitle', lvNo(s.idx));
     $('#rPanel').classList.toggle('lose', !s.win && !sv);
     $('#rPanel').classList.toggle('warn', sv);
     const stat = (icon, k, v) => `<div class="stat"><span class="label">${ic(icon)}${esc(T(k))}</span><b>${v}</b></div>`;
@@ -552,7 +561,7 @@ const UI = {
       mk(T('svNext'), 'ghost', 'user', () => this.survivalBrief(true));       // hand over to the next player
       mk(T('tabBoard'), 'ghost', 'trophy', () => { this.tab = 'board'; this.menu(); });
     } else if(s.mode==='level'){
-      if(s.win && s.idx < LEVELS.length-1) mk(T('next'), '', 'arrow-r', () => this.briefing(s.idx+1));
+      if(s.win && nextInUnit(s.idx) >= 0) mk(T('next'), '', 'arrow-r', () => this.briefing(nextInUnit(s.idx)));
       mk(s.win ? T('replay') : T('retry'), s.win ? 'ghost' : '', 'replay', () => startLevel(s.idx));
     } else mk(T('retry'), 'ghost', 'replay', () => { if(!startReview()) this.menu(); });
     mk(T('menu'), 'ghost', 'home', () => this.menu());
@@ -570,7 +579,7 @@ const UI = {
     else h += `<ul class="list">${list.map(n => {
       const ref = SENTENCE_INDEX.get(n.text);
       const x = { w:n.wrong, r: ref ? ref.e.t : n.text, pos: ref ? (ref.e.pos || LEVELS[ref.li].pos) : null };
-      const meta = `<div class="meta">${n.level>=0 ? `<span>${esc(T('level'))} ${n.level+1}</span>` : ''}<span>${esc(T('nbMisses', n.misses))}</span>
+      const meta = `<div class="meta">${LEVELS[n.level] ? `<span>${esc(T('level'))} ${lvNo(n.level)} · ${esc(LEVELS[n.level].topic)}</span>` : ''}<span>${esc(T('nbMisses', n.misses))}</span>
           <span class="dots2" title="${esc(T('nbProgress'))}">${[0,1].map(k => `<i class="${k<n.streak ? 'on' : ''}"></i>`).join('')}</span></div>`;
       return answerCard(x, null, meta);
     }).join('')}</ul>`;
